@@ -48,4 +48,4 @@ uvicorn main:app --reload
 This platform is the result of our combined efforts in exploring on-device intelligence and multimodal medical AI. We believe in making diagnostic tools more accessible, and this hosted solution is a major step toward that vision.
 
 ---
-*Developed and maintained by Daniel (Adejare Adelugba) and the Project Team.*
+*Developed and maintained by Adelugba adejare *
