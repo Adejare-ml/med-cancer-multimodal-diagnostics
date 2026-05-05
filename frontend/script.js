@@ -1,5 +1,5 @@
 // ✅ YOUR HUGGING FACE URL
-const API_URL = 'https://adejareworkstudio-heart-disease-backend.hf.space'; 
+const API_URL = 'https://adejareworkstudio-breast-cancer-predictor.hf.space'; 
 
 // Track current mode
 let currentMode = 'combined';
