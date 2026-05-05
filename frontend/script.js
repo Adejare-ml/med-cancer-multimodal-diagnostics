@@ -1,11 +1,161 @@
-// ✅ YOUR HUGGING FACE URL
+// ==========================================
+// 1. NEURAL CANVAS ANIMATION
+// ==========================================
+const canvas = document.getElementById('neuralCanvas');
+const ctx = canvas.getContext('2d');
+
+let particlesArray;
+let mouse = { x: null, y: null, radius: 150 };
+
+// Dynamic colors based on theme
+let networkColor = '56, 189, 248'; // Default Dark Mode (Cyan)
+
+function updateNetworkColor() {
+    const theme = document.documentElement.getAttribute('data-theme');
+    networkColor = theme === 'dark' ? '56, 189, 248' : '2, 132, 199'; // Cyan for dark, Deep Blue for light
+}
+
+window.addEventListener('mousemove', function(event) {
+    mouse.x = event.x;
+    mouse.y = event.y;
+});
+
+window.addEventListener('mouseout', function() {
+    mouse.x = undefined;
+    mouse.y = undefined;
+});
+
+window.addEventListener('resize', function() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    initCanvas();
+});
+
+class Particle {
+    constructor(x, y, directionX, directionY, size) {
+        this.x = x;
+        this.y = y;
+        this.directionX = directionX;
+        this.directionY = directionY;
+        this.size = size;
+    }
+    draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+        ctx.fillStyle = `rgba(${networkColor}, 0.8)`;
+        ctx.fill();
+    }
+    update() {
+        if (this.x > canvas.width || this.x < 0) this.directionX = -this.directionX;
+        if (this.y > canvas.height || this.y < 0) this.directionY = -this.directionY;
+
+        // Move particle
+        this.x += this.directionX;
+        this.y += this.directionY;
+        this.draw();
+    }
+}
+
+function initCanvas() {
+    particlesArray = [];
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    let numberOfParticles = (canvas.height * canvas.width) / 12000; // Density
+    
+    // Cap particles to prevent lag
+    if(numberOfParticles > 150) numberOfParticles = 150;
+
+    for (let i = 0; i < numberOfParticles; i++) {
+        let size = (Math.random() * 2) + 1;
+        let x = (Math.random() * ((innerWidth - size * 2) - (size * 2)) + size * 2);
+        let y = (Math.random() * ((innerHeight - size * 2) - (size * 2)) + size * 2);
+        let directionX = (Math.random() * 0.4) - 0.2; // Slow movement
+        let directionY = (Math.random() * 0.4) - 0.2;
+        
+        particlesArray.push(new Particle(x, y, directionX, directionY, size));
+    }
+}
+
+function animateCanvas() {
+    requestAnimationFrame(animateCanvas);
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
+
+    for (let i = 0; i < particlesArray.length; i++) {
+        particlesArray[i].update();
+    }
+    connectParticles();
+}
+
+function connectParticles() {
+    let opacityValue = 1;
+    for (let a = 0; a < particlesArray.length; a++) {
+        for (let b = a; b < particlesArray.length; b++) {
+            let distance = ((particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x))
+                         + ((particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y));
+            
+            if (distance < (canvas.width / 7) * (canvas.height / 7)) {
+                opacityValue = 1 - (distance / 20000);
+                ctx.strokeStyle = `rgba(${networkColor}, ${opacityValue})`;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+                ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+                ctx.stroke();
+            }
+        }
+        
+        // Connect to mouse
+        if (mouse.x && mouse.y) {
+            let mouseDistance = ((particlesArray[a].x - mouse.x) * (particlesArray[a].x - mouse.x))
+                              + ((particlesArray[a].y - mouse.y) * (particlesArray[a].y - mouse.y));
+            if (mouseDistance < 25000) {
+                let mouseOpacity = 1 - (mouseDistance / 25000);
+                ctx.strokeStyle = `rgba(${networkColor}, ${mouseOpacity + 0.2})`; // Glow slightly brighter near mouse
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+                ctx.lineTo(mouse.x, mouse.y);
+                ctx.stroke();
+            }
+        }
+    }
+}
+
+// Start Canvas
+updateNetworkColor();
+initCanvas();
+animateCanvas();
+
+// ==========================================
+// 2. THEME TOGGLE LOGIC
+// ==========================================
+const themeToggleBtn = document.getElementById('themeToggle');
+const currentTheme = localStorage.getItem('theme') || 'dark';
+
+document.documentElement.setAttribute('data-theme', currentTheme);
+updateNetworkColor(); // Set initial canvas color
+
+themeToggleBtn.addEventListener('click', () => {
+    let theme = document.documentElement.getAttribute('data-theme');
+    let newTheme = theme === 'dark' ? 'light' : 'dark';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    updateNetworkColor(); // Update canvas color dynamically
+});
+
+
+// ==========================================
+// 3. API & LOGIC INTEGRATION
+// ==========================================
 const API_URL = 'https://adejareworkstudio-breast-cancer-predictor.hf.space'; 
+const SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyQRMOoogW408vv2wiNSg4kaoeLg3bsk9oNiUiaN1Os4lDAd7_XXUheiurqyVQY7dWAFQ/exec";
 
-// Track current mode
 let currentMode = 'combined';
-let currentImageBase64 = ""; // Global variable for Google Sheets sync
+let currentImageBase64 = ""; 
 
-// --- TAB SWITCHING ---
+// Tab Switching
 window.switchTab = function(mode) {
     currentMode = mode;
     
@@ -31,7 +181,7 @@ window.switchTab = function(mode) {
     if (resDiv) resDiv.style.display = 'none';
 }
 
-// --- PREVIEW LOGIC & IMAGE CAPTURE ---
+// Image Preview
 const imageInput = document.getElementById('imageInput');
 const imagePreview = document.getElementById('imagePreview');
 
@@ -42,17 +192,15 @@ if (imageInput) {
             const reader = new FileReader();
             reader.onload = function(e) {
                 currentImageBase64 = e.target.result; 
-                imagePreview.innerHTML = `<img src="${e.target.result}" alt="Preview" style="max-width: 100%; border-radius: 8px;">`;
+                imagePreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
             }
             reader.readAsDataURL(file);
         }
     });
 }
 
-// --- GOOGLE SHEETS SYNC ---
+// Google Sheets Sync
 async function syncDataToSheets(predictionResult) {
-    const webAppUrl = "https://script.google.com/macros/s/AKfycbyQRMOoogW408vv2wiNSg4kaoeLg3bsk9oNiUiaN1Os4lDAd7_XXUheiurqyVQY7dWAFQ/exec";
-
     const payload = {
         age: document.getElementById('age')?.value || "N/A",
         shape: document.getElementById('shape')?.value || "N/A",
@@ -64,7 +212,7 @@ async function syncDataToSheets(predictionResult) {
     };
 
     try {
-        await fetch(webAppUrl, {
+        await fetch(SHEETS_WEB_APP_URL, {
             method: 'POST',
             mode: 'no-cors', 
             body: JSON.stringify(payload)
@@ -75,7 +223,7 @@ async function syncDataToSheets(predictionResult) {
     }
 }
 
-// --- SUBMIT LOGIC ---
+// Form Submission
 const form = document.getElementById('diagnosticForm');
 
 if (form) {
@@ -99,7 +247,7 @@ if (form) {
                 else if (currentMode === 'image') throw new Error("Please select an image file.");
             }
             
-            // Append Clinical Data (Lowercase keys to match backend)
+            // Append Clinical Data
             if (currentMode !== 'image') {
                 const ageInput = document.getElementById('age');
                 const clinicalData = {
@@ -123,10 +271,7 @@ if (form) {
             }
             
             const data = await response.json();
-            console.log("Raw API Response:", data); // Helpful for debugging in F12
-
-            // --- EXTRACT DATA FROM NEW LATE FUSION STRUCTURE ---
-            // We safely check if the new backend structure exists
+            
             let finalPred = "Unknown";
             let finalConf = 0.0;
             let displayMode = "Unknown Mode";
@@ -136,7 +281,6 @@ if (form) {
                 finalConf = data.final_diagnosis.confidence;
                 displayMode = data.final_diagnosis.mode;
             } else if (data.prediction) {
-                // Fallback just in case old backend is cached
                 finalPred = data.prediction;
                 finalConf = data.confidence;
                 displayMode = data.mode || "Single-Modality";
@@ -144,32 +288,28 @@ if (form) {
 
             const confPercent = (finalConf * 100).toFixed(1);
 
-            // Determine color scheme
-            let textColor = "#065f46"; // Green for Benign/Normal
-            if (finalPred.toLowerCase() === "malignant") {
-                textColor = "#991b1b"; // Red for Malignant
-            }
+            let isLightMode = document.documentElement.getAttribute('data-theme') === 'light';
+            let statusColor = finalPred.toLowerCase() === "malignant" 
+                ? (isLightMode ? "#dc2626" : "#ef4444") 
+                : (isLightMode ? "#059669" : "#10b981");
 
-            // DISPLAY RESULT
-            resultDiv.className = 'success';
-            resultDiv.style.color = 'black'; 
             resultDiv.innerHTML = `
-                <h3 style="color:${textColor}; margin-top:0;">Diagnosis: ${finalPred}</h3>
-                <p>Confidence: <strong>${confPercent}%</strong></p>
-                <p style="font-size: 0.8em; color: #666; margin-bottom: 5px;">Analysis Mode: ${displayMode}</p>
-                <div class="confidence-bar" style="background-color: #e5e7eb; height: 10px; border-radius: 5px; overflow: hidden;">
-                    <div class="fill" style="width: ${confPercent}%; background-color: ${textColor}; height: 100%;"></div>
+                <h3 style="color:${statusColor}; margin-top:0; font-size: 1.8rem;">Diagnosis: ${finalPred}</h3>
+                <p style="font-size: 1.1rem; margin: 10px 0;">Confidence: <strong style="color:var(--text-main);">${confPercent}%</strong></p>
+                <p style="font-size: 0.85em; color: var(--text-muted); margin-bottom: 10px;">Analysis Mode: ${displayMode}</p>
+                <div class="confidence-bar">
+                    <div class="fill" style="width: ${confPercent}%; background: ${statusColor}; box-shadow: 0 0 15px ${statusColor};"></div>
                 </div>
             `;
             resultDiv.style.display = 'block';
 
-            // TRIGGER THE SYNC
             await syncDataToSheets(finalPred);
 
         } catch (error) {
             console.error("Prediction Error:", error);
-            resultDiv.className = 'error';
-            resultDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+            resultDiv.innerHTML = `<strong style="color: #ef4444;">Error:</strong> <span style="color:var(--text-main);">${error.message}</span>`;
+            resultDiv.style.border = "1px solid #ef4444";
+            resultDiv.style.background = "rgba(239, 68, 68, 0.1)";
             resultDiv.style.display = 'block';
         } finally {
             btn.disabled = false;

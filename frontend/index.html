@@ -1,39 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Breast Cancer Diagnostic Tool | Adejare Work Studio</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;800&display=swap" rel="stylesheet">
-    
-    <style>
-        .helper-text {
-            display: block;
-            font-size: 0.75rem;
-            color: #888; /* Adjust color to match your theme */
-            margin-top: 2px;
-            margin-bottom: 8px;
-            font-weight: 400;
-        }
-    </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Breast Cancer Analysis</h1>
-        <p class="subtitle">AI-Powered Multimodal Diagnostic System</p>
+    <!-- Advanced Animated Neural Canvas -->
+    <canvas id="neuralCanvas"></canvas>
 
-        <div class="tabs">
+    <!-- Deep Ambient Glows (Behind Canvas) -->
+    <div class="ambient-orb orb-1"></div>
+    <div class="ambient-orb orb-2"></div>
+
+    <!-- Theme Toggle Button -->
+    <button id="themeToggle" class="theme-toggle-btn" aria-label="Toggle Light/Dark Mode">
+        <span class="icon-sun">☀️</span>
+        <span class="icon-moon">🌙</span>
+    </button>
+
+    <div class="container">
+        <div class="header-section">
+            <h1>Breast Cancer Analysis</h1>
+            <p class="subtitle">AI-Powered Multimodal Diagnostic System</p>
+        </div>
+
+        <div class="tabs glass-panel">
             <button class="tab-btn active" onclick="switchTab('combined')">Full Analysis</button>
-            <button class="tab-btn" onclick="switchTab('clinical')">Clinical Data Only</button>
+            <button class="tab-btn" onclick="switchTab('clinical')">Clinical Data</button>
             <button class="tab-btn" onclick="switchTab('image')">Image Only</button>
         </div>
 
         <form id="diagnosticForm">
             
             <div id="section-image" class="form-section">
-                <div class="input-group">
+                <div class="input-group glass-panel">
                     <label>Ultrasound Scan</label>
                     <small class="helper-text">Upload a clear, high-resolution breast ultrasound image.</small>
                     <input type="file" id="imageInput" accept="image/png, image/jpeg">
@@ -43,8 +47,8 @@
                 </div>
             </div>
 
-            <div id="section-clinical" class="form-section">
-                <label style="margin-top: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; margin-bottom: 15px;">Patient Parameters</label>
+            <div id="section-clinical" class="form-section glass-panel">
+                <label class="section-title">Patient Parameters</label>
                 
                 <div class="input-group">
                     <label for="age">Patient Age</label>
@@ -66,7 +70,7 @@
 
                     <div class="input-group">
                         <label for="margin">Margin Type</label>
-                        <small class="helper-text">The border of the mass. 'Circumscribed' is clear, 'Spiculated' is star-like.</small>
+                        <small class="helper-text">The border of the mass. 'Circumscribed' is clean.</small>
                         <select id="margin">
                             <option value="unknown">Unknown</option>
                             <option value="circumscribed">Circumscribed (Clean)</option>
@@ -77,7 +81,7 @@
                     
                     <div class="input-group">
                         <label for="tissue">Tissue Composition</label>
-                        <small class="helper-text">The predominant background breast tissue seen in the scan.</small>
+                        <small class="helper-text">The predominant background breast tissue.</small>
                         <select id="tissue">
                             <option value="unknown">Unknown</option>
                             <option value="fat">Fatty</option>
@@ -97,12 +101,12 @@
                 </div>
             </div>
 
-            <button type="submit" id="submitBtn">Generate Prediction</button>
+            <button type="submit" id="submitBtn" class="glass-btn">Generate Prediction</button>
         </form>
 
-        <div id="result"></div>
+        <div id="result" class="glass-panel result-panel"></div>
 
-        <div class="disclaimer">
+        <div class="disclaimer glass-panel">
             <p>
                 <strong>⚠️ Medical Disclaimer:</strong> This tool is for <strong>educational and research purposes only</strong>. 
                 It utilizes Artificial Intelligence to analyze patterns and may produce inaccurate results. 
@@ -111,35 +115,33 @@
                 <span class="highlight">Always visit a certified medical institution for clinical screening and diagnosis.</span>
             </p>
         </div>
-
     </div>
 
-    <footer>
-        <div class="footer-content" style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 20px; align-items: flex-start;">
+    <footer class="glass-footer">
+        <div class="footer-content">
             
-            <div class="academic-credit" style="text-align: left;">
-                <p style="font-size: 0.85rem; color: #888; text-transform: uppercase; letter-spacing: 1px;">Principal Investigator</p>
-                <h3 style="margin-bottom: 12px;">Dr. Roseline Ogundokun</h3>
+            <div class="academic-credit">
+                <p class="credit-title">Principal Investigator</p>
+                <h3>Dr. Roseline Ogundokun</h3>
                 
-                <p style="font-size: 0.85rem; color: #888; text-transform: uppercase; letter-spacing: 1px;">Co-Investigators</p>
-                <h3 style="margin-bottom: 4px;">Mrs. Dola Olawoye Prisica</h3>
-                <h3>Mr. Adejare Adelugba</h3>
+                <p class="credit-title">Co-Investigators</p>
+                <h3>Mrs. Dola Olawoye Prisica &bull; Mr. Adejare Adelugba</h3>
             </div>
             
             <div class="contact-links">
-                <a href="mailto:adelugbaadejare03@gmail.com" class="footer-link">
+                <a href="mailto:adelugbaadejare03@gmail.com" class="footer-link glass-link">
                     <span>adelugbaadejare03@gmail.com</span>
                 </a>
-                <a href="tel:+2347038027765" class="footer-link">
+                <a href="tel:+2347038027765" class="footer-link glass-link">
                     <span>+234 703 802 7765</span>
                 </a>
-                <a href="https://github.com/adejare-dev" target="_blank" class="footer-link">
+                <a href="https://github.com/adejare-dev" target="_blank" class="footer-link glass-link">
                     <span>GitHub</span>
                 </a>
             </div>
         </div>
         
-        <div style="text-align: center; margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+        <div class="footer-bottom">
             <p class="copyright">&copy; 2026 Adejare Work Studio. All rights reserved.</p>
         </div>
     </footer>
