@@ -1,51 +1,69 @@
+# 🩺 med-cancer-multimodal-diagnostics
+**Late-Fusion Multimodal Architecture for Breast Cancer Detection**
+
+[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009685?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Docker](https://img.shields.io/badge/Deployment-Docker-2496EF?style=flat-square&logo=docker&logoColor=white)](https://www.docker.com/)
+[![PyTorch](https://img.shields.io/badge/ML-PyTorch-EE4C2C?style=flat-square&logo=pytorch&logoColor=white)](https://pytorch.org/)
+
+## 🔬 Project Overview
+This system implements a state-of-the-art **late-fusion multimodal pipeline** designed to improve the diagnostic accuracy of breast cancer detection by combining medical imaging and structured clinical data. 
+
+Conventional systems often rely on a single modality; this project fuses visual features from medical scans with tabular clinical markers to provide a more holistic diagnostic perspective.
+
+### 🏗️ Technical Architecture
+The system utilizes a dual-branch architecture:
+1.  **Imaging Branch (MedCLIP/ResNet50):** Extracts high-level semantic features from breast ultrasound/mammography images.
+2.  **Clinical Branch (TabNet):** Processes structured patient data (age, mass shape, density) using a TabNet architecture to capture complex non-linear relationships in tabular data.
+3.  **Fusion Layer:** A late-fusion strategy where the outputs of both branches are concatenated and passed through a final classification head to produce the diagnostic result.
+
+**Performance:** Achieved a **0.91 AUC**, demonstrating superior robustness over single-modality baselines.
+
 ---
 
-# 🩺 Multimodal Breast Cancer Diagnostic Webpage
-
-Welcome! We are proud to present the web-hosting repository for our **Multimodal Breast Cancer Diagnostic System**. This platform serves as the interactive gateway to our late-fusion machine learning models, allowing clinicians and researchers to leverage AI for more accurate diagnostic predictions.
-
-## 🚀 Our Mission
-Our goal was to create a seamless, high-performance web interface that integrates both medical imaging and clinical data. By hosting our models through this application, we provide a unified environment where data science meets clinical utility.
-
-## 🛠️ Architecture & Integration
-This repository handles the deployment of our dual-modality pipeline:
-
-* **The Frontend:** A responsive, clinician-focused interface designed for easy data entry and image uploads.
-* **The Backend:** Powered by **FastAPI**, we’ve optimized the system for low-latency inference and asynchronous handling of medical images.
-* **Model Fusion:** The platform integrates our **MedCLIP (ResNet50)** image branch and **TabNet** clinical branch, executing a late-fusion strategy to deliver a final diagnostic result.
-
-## ✨ Key Platform Features
-* **Dual-Input Processing:** We’ve built the interface to accept both structured clinical parameters (age, mass shape, etc.) and medical scan uploads simultaneously.
-* **Real-Time Inference:** Get immediate diagnostic insights powered by our fine-tuned models.
-* **Deployment Ready:** We have structured this repo for easy hosting, ensuring our weight-transfer techniques and "network surgery" results are accessible in a live environment.
-* **Flexibility:** While we advocate for multimodal use, we’ve ensured the platform can handle single-modality inputs when necessary.
-
-## 💻 Getting Started
-
-To get our diagnostic tool running in your local or hosted environment, follow these steps:
-
-### 1. Clone the Webpage Repository
-```bash
-git clone https://github.com/Adejare-ml/Breast_cancer_detention_webpage.git
-cd Breast_cancer_detention_webpage
+## 📂 Repository Structure
+```text
+├── backend/
+│   ├── main.py             # FastAPI application entry point
+│   ├── inference.py        # Model loading and prediction logic
+│   ├── requirements.txt    # Production dependencies
+│   ├── Dockerfile         # Containerization config
+│   └── results/            # Serialized model weights (.joblib)
+├── frontend/
+│   ├── index.html          # Clinician-facing UI
+│   ├── script.js           # API integration & state management
+│   └── style.css           # Professional medical UI styling
+└── notebooks/
+    ├── medclip_training.ipynb       # Image branch training pipeline
+    └── project_text_progress.ipynb   # Tabular branch experimentation
 ```
 
-### 2. Install Dependencies
-We recommend using a virtual environment to keep our workspace clean:
+---
+
+## 🚀 Quick Start
+
+### 1. Clone and Setup
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+git clone https://github.com/Adejare-ml/med-cancer-multimodal-diagnostics.git
+cd med-cancer-multimodal-diagnostics
+```
+
+### 2. Backend Deployment
+```bash
+cd backend
 pip install -r requirements.txt
-```
-
-### 3. Launch the Application
-Start the FastAPI server to host the webpage:
-```bash
 uvicorn main:app --reload
 ```
 
-## 🤝 The Team Behind the Project
-This platform is the result of our combined efforts in exploring on-device intelligence and multimodal medical AI. We believe in making diagnostic tools more accessible, and this hosted solution is a major step toward that vision.
+### 3. Frontend Access
+Open `frontend/index.html` in any modern browser to interact with the diagnostic system.
 
 ---
-*Developed and maintained by Adelugba adejare *
+
+## 🛠️ Engineering Specifications
+- **API Framework:** FastAPI (Asynchronous inference)
+- **Model Serialization:** Joblib
+- **Frontend:** Vanilla JS/CSS (Optimized for clinical low-latency)
+- **Deployment:** Docker-ready for scalable healthcare environments.
+
+---
+*Developed by Adelugba Adejare*
