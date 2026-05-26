@@ -22,19 +22,22 @@ The system utilizes a dual-branch architecture:
 
 ## 📂 Repository Structure
 ```text
-├── backend/
+├── src/                    # Production-ready source code
 │   ├── main.py             # FastAPI application entry point
 │   ├── inference.py        # Model loading and prediction logic
 │   ├── requirements.txt    # Production dependencies
-│   ├── Dockerfile         # Containerization config
-│   └── results/            # Serialized model weights (.joblib)
-├── frontend/
-│   ├── index.html          # Clinician-facing UI
-│   ├── script.js           # API integration & state management
-│   └── style.css           # Professional medical UI styling
-└── notebooks/
-    ├── medclip_training.ipynb       # Image branch training pipeline
-    └── project_text_progress.ipynb   # Tabular branch experimentation
+│   └── Dockerfile          # Containerization config
+├── models/                 # Serialized model weights and scalers
+│   ├── tabnet_combined_model.joblib
+│   ├── scaler_clinical.joblib
+│   └── scaler_image.joblib
+├── frontend/               # Clinician-facing UI
+│   ├── index.html
+│   ├── script.js
+│   └── style.css
+└── notebooks/              # Research and training logs
+    ├── medclip_training.ipynb
+    └── project_text_progress.ipynb
 ```
 
 ---
@@ -49,7 +52,7 @@ cd med-cancer-multimodal-diagnostics
 
 ### 2. Backend Deployment
 ```bash
-cd backend
+cd src
 pip install -r requirements.txt
 uvicorn main:app --reload
 ```
