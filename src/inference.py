@@ -1,18 +1,16 @@
 import logging
-from typing import Dict, Any, Tuple
+from typing import Dict, Any
 from dataclasses import dataclass
 import torch
 import numpy as np
 import pandas as pd
 import joblib
 import os
-import gdown
 from PIL import Image
 from torchvision import transforms
 from medclip import MedCLIPModel
 from pytorch_tabnet.tab_model import TabNetClassifier
 
-# Professional Logging Configuration
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -43,64 +41,36 @@ class MultimodalCancerPredictor:
         self.scaler_image_path = os.path.join(model_dir, "scaler_image.joblib")
         self.tabnet_model_path = os.path.join(model_dir, "tabnet_combined_model.joblib")
 
-        self._ensure_weights_exist()
+        # Assets are now handled by bootstrapper.py before initialization
         self._load_assets()
         
-        # Image Pre-processing Pipeline
         self.transform = transforms.Compose([
             transforms.Resize((224, 224)),
             transforms.ToTensor(),
         ])
         
-        # Diagnostic Mapping
         self.labels = {0: 'Normal', 1: 'Benign', 2: 'Malignant'}
         logger.info("Model service successfully initialized.")
-
-    def _ensure_weights_exist(self) -> None:
-        """Downloads model weights from secure storage if missing."""
-        if not os.path.exists(self.weights_path):
-            logger.warning("Model weights not found locally. Initiating download...")
-            file_id = '1k_3siDeRQd6cgqu1_LzTvh9BM2xpFB3T'
-            url = f'https://drive.google.com/uc?id={file_id}'
-            try:
-                gdown.download(url, self.weights_path, quiet=False)
-                logger.info("Weights downloaded successfully.")
-            except Exception as e:
-                logger.error(f"Failed to download weights: {e}")
-                raise RuntimeError("Critical failure: Could not retrieve model weights.")
 
     def _load_assets(self) -> None:
         """Loads scalers and model architectures into memory."""
         try:
-            # Load Scalers
             self.scaler_clinical = joblib.load(self.scaler_clinical_path)
             self.scaler_image = joblib.load(self.scaler_image_path)
 
-            # Load MedCLIP (Image Encoder)
             self.medclip = MedCLIPModel()
             self.medclip.load_state_dict(torch.load(self.weights_path, map_location=self.device))
             self.medclip.to(self.device)
             self.medclip.eval()
 
-            # Load TabNet (Classifier)
             self.tabnet = joblib.load(self.tabnet_model_path)
             
-        except FileNotFoundError as e:
-            logger.error(f"Missing required model asset: {e}")
-            raise RuntimeError(f"Model asset missing: {e}")
         except Exception as e:
             logger.error(f"Unexpected error during asset loading: {e}")
             raise RuntimeError(f"Initialization failed: {e}")
 
     def preprocess_image(self, image_file) -> np.ndarray:
-        """
-        Transforms raw image into scaled MedCLIP embeddings.
-        
-        Args:
-            image_file: File-like object or path to image.
-        Returns:
-            Scaled numpy array of image features.
-        """
+        """Transforms raw image into scaled MedCLIP embeddings."""
         try:
             image = Image.open(image_file).convert('RGB')
             img_tensor = self.transform(image).unsqueeze(0).to(self.device)
@@ -115,15 +85,9 @@ class MultimodalCancerPredictor:
             raise ValueError(f"Invalid image format or corrupted file: {e}")
 
     def preprocess_clinical(self, data_dict: Dict[str, Any]) -> np.ndarray:
-        """
-        Transforms clinical data dictionary into scaled feature vector.
-        
-        Args:
-            data_dict: Dictionary containing patient clinical features.
-        Returns:
-            Scaled numpy array of clinical features.
-        """
+        """Transforms clinical data dictionary into scaled feature vector."""
         try:
+            # Input is now guaranteed by Pydantic schema in main.py
             df = pd.DataFrame([data_dict])
             return self.scaler_clinical.transform(df.values)
         except Exception as e:
@@ -131,23 +95,12 @@ class MultimodalCancerPredictor:
             raise ValueError(f"Invalid clinical data structure: {e}")
 
     def predict(self, image_file, clinical_data: Dict[str, Any]) -> PredictionResult:
-        """
-        Executes multimodal late-fusion inference.
-        
-        Args:
-            image_file: Image input.
-            clinical_data: Tabular input.
-        Returns:
-            PredictionResult containing label, confidence, and full probability distribution.
-        """
-        # 1. Feature Extraction
+        """Executes multimodal late-fusion inference."""
         img_feats = self.preprocess_image(image_file)
         clin_feats = self.preprocess_clinical(clinical_data)
         
-        # 2. Late Fusion (Concatenation)
         X_combined = np.hstack([img_feats, clin_feats])
         
-        # 3. Inference
         prediction_idx = self.tabnet.predict(X_combined)[0]
         probabilities = self.tabnet.predict_proba(X_combined)[0]
         
