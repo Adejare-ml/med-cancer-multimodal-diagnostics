@@ -14,6 +14,7 @@ class HeartDiseasePredictor:
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         print(f"Loading models on {self.device}...")
 
+
         # --- DOWNLOAD WEIGHTS FROM GOOGLE DRIVE IF MISSING ---
         weights_path = f"{model_dir}/model_weights.pth"
         
