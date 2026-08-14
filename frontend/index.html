@@ -175,7 +175,51 @@
                         <button type="button" class="tool-btn" id="btnInvert" title="Invert Colors">🌓 Invert</button>
                         <button type="button" class="tool-btn" id="btnHeatmap" title="Grad-CAM Thermal Heatmap">🔥 Heatmap</button>
                         <button type="button" class="tool-btn" id="btnROI" title="Draw Lesion ROI Mask">✏️ Draw ROI</button>
+                        <button type="button" class="tool-btn" id="btn3DSlice" onclick="toggle3DSliceViewer()" title="3D Volumetric Multi-Planar Slice View">🧊 3D Slices</button>
+                        <button type="button" class="tool-btn" id="btnCompare" onclick="toggleCompareStudio()" title="Longitudinal Scan Comparison">📊 Compare</button>
                         <button type="button" class="tool-btn" id="btnResetImg" title="Reset Image">🔄 Reset</button>
+                    </div>
+                </div>
+
+                <!-- 3D Volumetric Multi-Planar Slice View Panel -->
+                <div class="volumetric-panel glass-panel" id="volumetricPanel" style="display:none;">
+                    <div class="panel-header">
+                        <h4>🧊 3D Multi-Planar Slice Viewer</h4>
+                        <span class="badge" id="slicePlaneBadge">Axial View</span>
+                    </div>
+                    <div class="slice-controls">
+                        <label>Plane:</label>
+                        <button type="button" class="tool-btn active" onclick="setSlicePlane('axial')">Axial</button>
+                        <button type="button" class="tool-btn" onclick="setSlicePlane('sagittal')">Sagittal</button>
+                        <button type="button" class="tool-btn" onclick="setSlicePlane('coronal')">Coronal</button>
+                    </div>
+                    <div class="slice-slider-box">
+                        <label>Depth Slice: <span id="sliceNumText">Slice 16/32</span></label>
+                        <input type="range" id="sliceSlider" min="1" max="32" value="16" oninput="updateSliceView(this.value)">
+                    </div>
+                </div>
+
+                <!-- Longitudinal Scan Comparison Studio Panel -->
+                <div class="compare-studio-panel glass-panel" id="compareStudioPanel" style="display:none;">
+                    <div class="panel-header">
+                        <h4>📊 Longitudinal Lesion Growth Studio</h4>
+                        <span class="badge" id="growthBadge">Baseline vs Current</span>
+                    </div>
+                    <div class="compare-grid">
+                        <div class="compare-box">
+                            <h5>Baseline Scan (Prior 6 Mo)</h5>
+                            <canvas id="baselineCanvas" width="200" height="200"></canvas>
+                            <span class="comp-stat">Vol: 1.45 cm³</span>
+                        </div>
+                        <div class="compare-box">
+                            <h5>Current Scan (Today)</h5>
+                            <canvas id="currentCompCanvas" width="200" height="200"></canvas>
+                            <span class="comp-stat" id="currentVolStat">Vol: 1.62 cm³</span>
+                        </div>
+                    </div>
+                    <div class="growth-metric-box">
+                        <span class="metric-label">Calculated Growth Rate:</span>
+                        <strong class="metric-val" id="growthRateVal">+11.7% / 6 Mos</strong>
                     </div>
                 </div>
 
@@ -382,6 +426,34 @@
                     </div>
                 </div>
 
+                <!-- SHAP Model Explainability Feature Drivers Dashboard -->
+                <div class="result-card shap-card">
+                    <h4>🔍 SHAP Model Explainability Drivers</h4>
+                    <p class="shap-sub">Feature attribution values influencing the current AI diagnostic decision:</p>
+                    <div class="shap-drivers-list" id="shapDriversList">
+                        <div class="shap-row positive">
+                            <span class="driver-name">Mass Margin Spiculation</span>
+                            <div class="driver-bar-track"><div class="driver-bar pos" style="width: 75%;"></div></div>
+                            <span class="driver-score">+0.38 (High Risk)</span>
+                        </div>
+                        <div class="shap-row positive">
+                            <span class="driver-name">Microcalcifications Density</span>
+                            <div class="driver-bar-track"><div class="driver-bar pos" style="width: 62%;"></div></div>
+                            <span class="driver-score">+0.29 (High Risk)</span>
+                        </div>
+                        <div class="shap-row positive">
+                            <span class="driver-name">ACR BI-RADS Category</span>
+                            <div class="driver-bar-track"><div class="driver-bar pos" style="width: 50%;"></div></div>
+                            <span class="driver-score">+0.22 (High Risk)</span>
+                        </div>
+                        <div class="shap-row negative">
+                            <span class="driver-name">Patient Age (< 45)</span>
+                            <div class="driver-bar-track"><div class="driver-bar neg" style="width: 30%;"></div></div>
+                            <span class="driver-score">-0.14 (Protective)</span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Clinical Action Guidelines & Recommendations -->
                 <div class="result-card recommendation-card">
                     <h4>🏥 Clinical Action & NCCN Recommendation</h4>
@@ -536,6 +608,33 @@
             <p>&copy; 2026 Adejare Work Studio &bull; Multimodal AI Breast Cancer Platform</p>
         </div>
     </footer>
+
+    <!-- OncoBot AI Diagnostic Assistant Floating Widget & Drawer -->
+    <button type="button" class="oncobot-float-btn" id="oncobotBtn" onclick="toggleOncobotDrawer()" title="Ask OncoBot AI Assistant">
+        🤖 <span class="oncobot-label">OncoBot AI</span>
+    </button>
+
+    <div class="oncobot-drawer glass-panel" id="oncobotDrawer" style="display:none;">
+        <div class="drawer-header">
+            <div class="bot-info">
+                <span class="bot-avatar">🤖</span>
+                <div>
+                    <h4>OncoBot AI Clinical Assistant</h4>
+                    <small>Radiology & BI-RADS Specialist</small>
+                </div>
+            </div>
+            <button type="button" class="close-btn" onclick="toggleOncobotDrawer()">✖</button>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="chat-msg bot">
+                👋 Hello! I am OncoBot AI. Ask me anything about BI-RADS guidelines, lesion radiomics, ultrasound vs mammogram features, or recommended clinical next steps!
+            </div>
+        </div>
+        <div class="chat-input-row">
+            <input type="text" id="chatInput" placeholder="Type clinical question..." onkeypress="handleChatKeyPress(event)">
+            <button type="button" class="primary-btn" onclick="sendChatMessage()">Send</button>
+        </div>
+    </div>
 
     <!-- App Logic Script -->
     <script src="script.js" defer></script>

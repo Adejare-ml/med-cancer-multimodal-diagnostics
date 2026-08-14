@@ -953,3 +953,138 @@ h1, h2, h3, h4 {
         border: none !important;
     }
 }
+
+/* 3D Volumetric Panel & Longitudinal Comparison Studio */
+.volumetric-panel, .compare-studio-panel {
+    margin-top: 1rem;
+    padding: 1.25rem;
+    border-radius: 16px;
+    background: var(--input-bg);
+}
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.panel-header h4 { font-size: 0.95rem; color: var(--primary); font-weight: 700; }
+.slice-controls { display: flex; gap: 8px; margin-bottom: 12px; }
+.slice-slider-box { display: flex; flex-direction: column; gap: 6px; font-size: 0.82rem; }
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 12px; }
+.compare-box { text-align: center; }
+.compare-box h5 { font-size: 0.8rem; margin-bottom: 6px; color: var(--text-muted); }
+.compare-box canvas { border-radius: 12px; border: 1px solid var(--glass-border); max-width: 100%; height: auto; }
+.comp-stat { display: block; font-size: 0.78rem; font-weight: 700; color: var(--primary); margin-top: 4px; }
+.growth-metric-box { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 8px 14px; border-radius: 10px; font-size: 0.85rem; }
+
+/* SHAP Feature Drivers Dashboard */
+.shap-card { background: var(--input-bg); }
+.shap-sub { font-size: 0.78rem; color: var(--text-muted); margin: 4px 0 12px; }
+.shap-drivers-list { display: flex; flex-direction: column; gap: 10px; }
+.shap-row { display: grid; grid-template-columns: 140px 1fr 120px; align-items: center; gap: 10px; font-size: 0.8rem; }
+.driver-name { font-weight: 600; color: var(--text-main); }
+.driver-bar-track { background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; overflow: hidden; }
+.driver-bar { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+.driver-bar.pos { background: linear-gradient(90deg, #ef4444, #f59e0b); }
+.driver-bar.neg { background: linear-gradient(90deg, #10b981, #06b6d4); }
+.driver-score { font-size: 0.75rem; font-weight: 700; text-align: right; }
+.shap-row.positive .driver-score { color: #ef4444; }
+.shap-row.negative .driver-score { color: #10b981; }
+
+/* OncoBot AI Assistant Floating Button & Drawer */
+.oncobot-float-btn {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 999;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.4);
+    border-radius: 30px;
+    font-weight: 800;
+    font-size: 0.95rem;
+    cursor: pointer;
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.45);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.oncobot-float-btn:hover { transform: scale(1.05); box-shadow: 0 12px 35px rgba(99, 102, 241, 0.6); }
+
+.oncobot-drawer {
+    position: fixed;
+    bottom: 84px;
+    right: 24px;
+    z-index: 1000;
+    width: 360px;
+    height: 480px;
+    display: flex;
+    flex-direction: column;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+}
+.drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    background: rgba(0,0,0,0.25);
+    border-bottom: 1px solid var(--glass-border);
+}
+.bot-info { display: flex; align-items: center; gap: 10px; }
+.bot-avatar { font-size: 1.5rem; }
+.bot-info h4 { font-size: 0.9rem; color: var(--text-main); margin: 0; }
+.bot-info small { font-size: 0.72rem; color: var(--text-muted); }
+
+.chat-messages {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.chat-msg {
+    max-width: 85%;
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: 0.82rem;
+    line-height: 1.4;
+}
+.chat-msg.bot {
+    align-self: flex-start;
+    background: var(--input-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--text-main);
+}
+.chat-msg.user {
+    align-self: flex-end;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent-gold) 100%);
+    color: #000;
+    font-weight: 600;
+}
+
+.chat-input-row {
+    padding: 10px 14px;
+    display: flex;
+    gap: 8px;
+    background: rgba(0,0,0,0.2);
+    border-top: 1px solid var(--glass-border);
+}
+.chat-input-row input {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--glass-border);
+    background: var(--input-bg);
+    color: var(--text-main);
+    font-size: 0.82rem;
+}
+.chat-input-row button {
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    margin-top: 0;
+}

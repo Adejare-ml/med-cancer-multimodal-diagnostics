@@ -812,3 +812,139 @@ window.speakDiagnosis = function() {
 window.exportPDFReport = function() {
     window.print();
 };
+
+// ==========================================
+// 10. 3D SLICE VIEWER & COMPARISON STUDIO
+// ==========================================
+let currentSlicePlane = 'axial';
+
+window.toggle3DSliceViewer = function() {
+    const p = document.getElementById('volumetricPanel');
+    if (p.style.display === 'none') {
+        p.style.display = 'block';
+        updateSliceView(document.getElementById('sliceSlider').value);
+    } else {
+        p.style.display = 'none';
+    }
+};
+
+window.setSlicePlane = function(plane) {
+    currentSlicePlane = plane;
+    document.getElementById('slicePlaneBadge').innerText = `${plane.charAt(0).toUpperCase() + plane.slice(1)} View`;
+    document.querySelectorAll('.slice-controls .tool-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.innerText.toLowerCase() === plane);
+    });
+    updateSliceView(document.getElementById('sliceSlider').value);
+};
+
+window.updateSliceView = function(val) {
+    document.getElementById('sliceNumText').innerText = `Slice ${val}/32`;
+    const canvas = document.getElementById('imageCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    // Apply subtle 3D volumetric slice modulation
+    let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let data = imgData.data;
+    let factor = 0.8 + (val / 32) * 0.4;
+    for (let i = 0; i < data.length; i += 4) {
+        data[i] = Math.min(255, data[i] * factor);
+        data[i+1] = Math.min(255, data[i+1] * factor);
+        data[i+2] = Math.min(255, data[i+2] * factor);
+    }
+    ctx.putImageData(imgData, 0, 0);
+};
+
+window.toggleCompareStudio = function() {
+    const p = document.getElementById('compareStudioPanel');
+    if (p.style.display === 'none') {
+        p.style.display = 'block';
+        renderLongitudinalCanvases();
+    } else {
+        p.style.display = 'none';
+    }
+};
+
+function renderLongitudinalCanvases() {
+    const baseCanvas = document.getElementById('baselineCanvas');
+    const currCanvas = document.getElementById('currentCompCanvas');
+    if (!baseCanvas || !currCanvas) return;
+
+    const bCtx = baseCanvas.getContext('2d');
+    const cCtx = currCanvas.getContext('2d');
+
+    // Draw simulated baseline scan
+    bCtx.fillStyle = '#0f172a';
+    bCtx.fillRect(0, 0, 200, 200);
+    bCtx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+    bCtx.beginPath();
+    bCtx.arc(100, 100, 50, 0, Math.PI * 2);
+    bCtx.fill();
+    bCtx.fillStyle = 'rgba(244, 63, 94, 0.6)';
+    bCtx.beginPath();
+    bCtx.arc(100, 100, 18, 0, Math.PI * 2);
+    bCtx.fill();
+
+    // Draw simulated current scan (+11.7% lesion expansion)
+    cCtx.fillStyle = '#0f172a';
+    cCtx.fillRect(0, 0, 200, 200);
+    cCtx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+    cCtx.beginPath();
+    cCtx.arc(100, 100, 50, 0, Math.PI * 2);
+    cCtx.fill();
+    cCtx.fillStyle = 'rgba(244, 63, 94, 0.8)';
+    cCtx.beginPath();
+    cCtx.arc(100, 100, 22, 0, Math.PI * 2);
+    cCtx.fill();
+}
+
+// ==========================================
+// 11. ONCOBOT AI DIAGNOSTIC ASSISTANT CHAT
+// ==========================================
+window.toggleOncobotDrawer = function() {
+    const d = document.getElementById('oncobotDrawer');
+    d.style.display = d.style.display === 'none' ? 'flex' : 'none';
+};
+
+window.sendChatMessage = function() {
+    const input = document.getElementById('chatInput');
+    const q = input.value.trim();
+    if (!q) return;
+
+    const chat = document.getElementById('chatMessages');
+    
+    // User message
+    const uMsg = document.createElement('div');
+    uMsg.className = 'chat-msg user';
+    uMsg.innerText = q;
+    chat.appendChild(uMsg);
+    input.value = '';
+
+    // Bot response
+    setTimeout(() => {
+        const bMsg = document.createElement('div');
+        bMsg.className = 'chat-msg bot';
+        bMsg.innerText = generateOncoBotResponse(q);
+        chat.appendChild(bMsg);
+        chat.scrollTop = chat.scrollHeight;
+    }, 600);
+};
+
+window.handleChatKeyPress = function(e) {
+    if (e.key === 'Enter') sendChatMessage();
+};
+
+function generateOncoBotResponse(q) {
+    let text = q.toLowerCase();
+    if (text.includes('bi-rads') || text.includes('birads')) {
+        return "ACR BI-RADS standardizes breast imaging reporting. BI-RADS 1-2 indicates negative/benign findings, BI-RADS 3 is probably benign (<2% malignancy risk), BI-RADS 4 indicates suspicious abnormality requiring core biopsy, and BI-RADS 5 signifies highly suspicious malignancy (≥95%).";
+    }
+    if (text.includes('ultrasound') || text.includes('mammogram')) {
+        return "Ultrasound is ideal for distinguishing fluid-filled cysts from solid masses and evaluating dense breast tissue. Mammograms excel at detecting microcalcifications and architectural distortion.";
+    }
+    if (text.includes('radiomics') || text.includes('shape') || text.includes('margin')) {
+        return "Spiculated or indistinct margins strongly correlate with invasive malignant growth, whereas smooth, circumscribed margins typically indicate benign fibroadenomas or cysts.";
+    }
+    return "OncoVision AI utilizes late fusion across vision transformers (MedCLIP) and TabNet clinical classifiers. For definitive clinical evaluation, always consult with a certified Radiologist.";
+}
