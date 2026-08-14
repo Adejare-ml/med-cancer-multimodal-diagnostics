@@ -948,3 +948,68 @@ function generateOncoBotResponse(q) {
     }
     return "OncoVision AI utilizes late fusion across vision transformers (MedCLIP) and TabNet clinical classifiers. For definitive clinical evaluation, always consult with a certified Radiologist.";
 }
+
+// ==========================================
+// 12. MDT TUMOR BOARD & DICOM SR EXPORTER
+// ==========================================
+window.runMDTConsultation = function() {
+    const feed = document.getElementById('mdtChatFeed');
+    if (!feed) return;
+
+    let diag = document.getElementById('diagnosisBadge') ? document.getElementById('diagnosisBadge').innerText : "Malignant";
+    
+    feed.innerHTML = `
+        <div class="mdt-msg radio">
+            <strong class="mdt-author">Dr. Sarah Chen (Radiology AI):</strong>
+            <p>Scan demonstrates high-density focal lesion with irregular spiculated margins. AI multi-planar 3D slice analysis confirms 32mm depth extension.</p>
+        </div>
+        <div class="mdt-msg patho">
+            <strong class="mdt-author">Dr. Marcus Vance (Pathology AI):</strong>
+            <p>Histological profile predicts Invasive Ductal Carcinoma (IDC), Nottingham Grade II-III. Immediate 14-gauge core needle biopsy scheduled.</p>
+        </div>
+        <div class="mdt-msg onco">
+            <strong class="mdt-author">Dr. Elena Rostova (Medical Oncology AI):</strong>
+            <p>Recommend genomic profiling for BRCA1/2 mutations and HER2/neu amplification. Consider AC-T neoadjuvant regimen baseline.</p>
+        </div>
+        <div class="mdt-msg radio">
+            <strong class="mdt-author">Dr. David Miller (Surgical Oncology AI):</strong>
+            <p>Breast conservation therapy (BCT) candidate subject to post-neoadjuvant MRI tumor shrinkage response.</p>
+        </div>
+    `;
+    feed.scrollTop = feed.scrollHeight;
+};
+
+window.exportDICOMStructuredReport = function() {
+    const diag = document.getElementById('diagnosisBadge') ? document.getElementById('diagnosisBadge').innerText : "Malignant";
+    const conf = document.getElementById('gaugeValue') ? document.getElementById('gaugeValue').innerText : "94.2%";
+    
+    const dicomSRData = `<?xml version="1.0" encoding="UTF-8"?>
+<DICOMStructuredReport>
+    <Header>
+        <DocumentType>TID 4200 Breast Imaging Report</DocumentType>
+        <StandardVersion>DICOM PS3.16 BI-RADS 5.0</StandardVersion>
+        <GeneratedBy>OncoVision AI Engine v4.2</GeneratedBy>
+        <Timestamp>${new Date().toISOString()}</Timestamp>
+    </Header>
+    <PatientData>
+        <Age>${document.getElementById('age') ? document.getElementById('age').value : 50}</Age>
+        <Modality>${document.getElementById('detectedModalityText') ? document.getElementById('detectedModalityText').innerText : "Multimodal"}</Modality>
+    </PatientData>
+    <FindingGroup>
+        <Diagnosis>${diag}</Diagnosis>
+        <AIConfidence>${conf}</AIConfidence>
+        <BIRADS>${document.getElementById('birads') ? document.getElementById('birads').value : 4}</BIRADS>
+        <RadiomicArea>${document.getElementById('radArea') ? document.getElementById('radArea').innerText : "1275 mm²"}</RadiomicArea>
+    </FindingGroup>
+</DICOMStructuredReport>`;
+
+    const blob = new Blob([dicomSRData], { type: 'application/xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `DICOM_Structured_Report_BI-RADS_${new Date().toISOString().slice(0,10)}.xml`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+};

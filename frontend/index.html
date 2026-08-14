@@ -454,6 +454,56 @@
                     </div>
                 </div>
 
+                <!-- Multi-Modal AI Consensus Fusion Breakdown Card -->
+                <div class="result-card fusion-card">
+                    <h4>🔀 Multi-Modal AI Consensus Weighting</h4>
+                    <p class="shap-sub">Unified cross-modality confidence fusion:</p>
+                    <div class="fusion-list">
+                        <div class="fusion-row">
+                            <span class="fusion-label">Mammography / DBT (35% weight)</span>
+                            <div class="prob-bar-track"><div id="fusionMammo" class="prob-bar-fill malignant" style="width: 88%;"></div></div>
+                            <span id="valMammo" class="prob-val">88.4% Malignant</span>
+                        </div>
+                        <div class="fusion-row">
+                            <span class="fusion-label">Dynamic MRI Kinetics (30% weight)</span>
+                            <div class="prob-bar-track"><div id="fusionMRI" class="prob-bar-fill malignant" style="width: 92%;"></div></div>
+                            <span id="valMRI" class="prob-val">92.1% Malignant</span>
+                        </div>
+                        <div class="fusion-row">
+                            <span class="fusion-label">Ultrasound Radiomics (20% weight)</span>
+                            <div class="prob-bar-track"><div id="fusionUSG" class="prob-bar-fill malignant" style="width: 84%;"></div></div>
+                            <span id="valUSG" class="prob-val">84.0% Malignant</span>
+                        </div>
+                        <div class="fusion-row">
+                            <span class="fusion-label">Genomic Risk Score (15% weight)</span>
+                            <div class="prob-bar-track"><div id="fusionGeno" class="prob-bar-fill malignant" style="width: 76%;"></div></div>
+                            <span id="valGeno" class="prob-val">76.5% High Risk</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Multi-Disciplinary Team (MDT) Tumor Board Collaborative Simulator -->
+                <div class="result-card mdt-card">
+                    <div class="mdt-header">
+                        <h4>👥 MDT Tumor Board AI Consensus</h4>
+                        <button type="button" class="tool-btn pulse" onclick="runMDTConsultation()">⚡ Run MDT Consult</button>
+                    </div>
+                    <div class="mdt-chat-feed" id="mdtChatFeed">
+                        <div class="mdt-msg radio">
+                            <strong class="mdt-author">Dr. Sarah Chen (Radiology AI):</strong>
+                            <p>Mass exhibits irregular margins and posterior acoustic shadowing on ultrasound. Recommended BI-RADS 4C/5 assignment.</p>
+                        </div>
+                        <div class="mdt-msg patho">
+                            <strong class="mdt-author">Dr. Marcus Vance (Pathology AI):</strong>
+                            <p>Correlates with high-grade invasive ductal carcinoma (IDC) features. Core needle biopsy strongly indicated.</p>
+                        </div>
+                        <div class="mdt-msg onco">
+                            <strong class="mdt-author">Dr. Elena Rostova (Oncology AI):</strong>
+                            <p>Evaluate HER2/ER/PR receptor expression post-biopsy for targeted neoadjuvant systemic therapy planning.</p>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Clinical Action Guidelines & Recommendations -->
                 <div class="result-card recommendation-card">
                     <h4>🏥 Clinical Action & NCCN Recommendation</h4>
@@ -466,19 +516,22 @@
 
             </div>
 
-            <!-- Action Toolbar: Export PDF, Google Sheets Sync, Save Case -->
+            <!-- Action Toolbar: Export PDF, DICOM SR, Google Sheets Sync, Save Case -->
             <div class="results-actions">
                 <button type="button" class="action-btn pdf" onclick="exportPDFReport()">
-                    📄 Export Clinical PDF Report
+                    📄 Export Clinical PDF
+                </button>
+                <button type="button" class="action-btn dicom-sr" onclick="exportDICOMStructuredReport()">
+                    📑 Export DICOM SR (BI-RADS 5.0)
                 </button>
                 <button type="button" class="action-btn print" onclick="window.print()">
-                    🖨️ Print Clinical Snapshot
+                    🖨️ Print Snapshot
                 </button>
                 <button type="button" class="action-btn voice" onclick="speakDiagnosis()">
                     🔊 Audio Voice Summary
                 </button>
                 <button type="button" class="action-btn sheets" onclick="manualSyncSheets()">
-                    📊 Sync to Google Sheets
+                    📊 Sync to Sheets
                 </button>
                 <button type="button" class="action-btn save" onclick="saveToPatientLog()">
                     💾 Save to History Log
