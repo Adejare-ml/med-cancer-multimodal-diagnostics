@@ -516,6 +516,43 @@
 
             </div>
 
+            <!-- Analysis Basis: the evidence and computational basis behind the result,
+                 plus the conditions under which it should not be relied on. -->
+            <section class="analysis-basis" id="analysisBasisPanel">
+
+                <div class="basis-header">
+                    <h4>Analysis Basis</h4>
+                    <p class="basis-sub">What this system used to produce the result above, and where that result can fail.</p>
+                </div>
+
+                <div class="basis-grid">
+                    <div class="basis-block">
+                        <h5>Input</h5>
+                        <ul class="basis-list" id="basisInput"></ul>
+                    </div>
+                    <div class="basis-block">
+                        <h5>Image Evidence</h5>
+                        <ul class="basis-list" id="basisImage"></ul>
+                    </div>
+                    <div class="basis-block">
+                        <h5>Clinical Evidence</h5>
+                        <ul class="basis-list" id="basisClinical"></ul>
+                    </div>
+                    <div class="basis-block">
+                        <h5>Model Output</h5>
+                        <ul class="basis-list" id="basisOutput"></ul>
+                    </div>
+                </div>
+
+                <div class="basis-limits">
+                    <h5>Where This Result May Fail</h5>
+                    <ul class="basis-list limits" id="basisLimits"></ul>
+                </div>
+
+                <div class="basis-status" id="basisStatus"></div>
+
+            </section>
+
             <!-- Action Toolbar: Export PDF, DICOM SR, Google Sheets Sync, Save Case -->
             <div class="results-actions">
                 <button type="button" class="action-btn pdf" onclick="exportPDFReport()">
@@ -690,6 +727,8 @@
     </div>
 
     <!-- App Logic Script -->
+    <!-- Evidence rules for the Analysis Basis panel; must load before script.js. -->
+    <script src="analysis-basis.js" defer></script>
     <script src="script.js" defer></script>
 
 </body>

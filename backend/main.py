@@ -24,15 +24,39 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-MODEL_STATUS = {
-    "loaded": True,
-    "modality_detector": "ResNet18 (100% Accuracy)",
-    "ultrasound_specialist": "MedCLIP + ResNet Ensemble",
-    "mammogram_specialist": "MedCLIP 384x384 MLP Head",
-    "clinical_classifier": "TabNet (9-Feature Schema)",
-    "radiomics_engine": "Active (Scikit-Image RegionProps)",
+# What /predict actually executes.
+#
+# No trained model is loaded by this service. The endpoint runs a fixed
+# rule-based scoring function over five clinical fields. The MedCLIP / TabNet
+# loading code lives in backend/inference.py but is not imported here, and
+# results/tabnet_combined_model.joblib is a 2-byte placeholder rather than a
+# model, so that path cannot currently run.
+#
+# These fields are reported to clients so the UI can state the basis of a
+# result accurately. Update them in the same commit that wires in real models.
+ENGINE_STATUS = {
+    "type": "rule_based_scoring_function",
+    "trained_model_loaded": False,
+    "scoring_inputs_used": ["age", "birads", "shape", "margin", "density"],
+    "inputs_collected_but_unused": [
+        "calcifications", "lesion_size_mm", "family_history", "prior_biopsy"
+    ],
+    "image_used_for_scoring": False,
+    "image_used_for": "whole-image intensity statistics only",
+    "radiomics_method": "mean-intensity threshold over the whole image; not lesion segmentation",
+    "calibrated": False,
+    "thresholds": "fixed constants, not derived from a validation set",
+    "validation_metrics_available": False,
+    "intended_use": "research and education only; not for diagnostic use",
     "uptime_seconds": 0
 }
+
+# Trained weights that exist in the research repository but are not served here.
+UNWIRED_ARTIFACTS = [
+    "specialist_ultrasound.pth", "specialist_mammogram.pth",
+    "specialist_mri_v5.pth", "medclip_type_classifier.pth",
+    "tabnet_universal_clinical_model.zip"
+]
 
 START_TIME = time.time()
 
@@ -40,8 +64,8 @@ START_TIME = time.time()
 def startup_event():
     print("Initializing Multimodal Breast Cancer Diagnostic API...")
     os.makedirs("results", exist_ok=True)
-    MODEL_STATUS["uptime_seconds"] = time.time() - START_TIME
-    print("API initialized and ready for inference!")
+    ENGINE_STATUS["uptime_seconds"] = time.time() - START_TIME
+    print("API ready. Scoring engine: rule-based; no trained model loaded.")
 
 @app.get("/")
 def read_root():
@@ -50,7 +74,8 @@ def read_root():
         "service": "Multimodal Breast Cancer Diagnostic API",
         "version": "2.5.0",
         "uptime_seconds": round(time.time() - START_TIME, 2),
-        "models": MODEL_STATUS
+        "engine": ENGINE_STATUS,
+        "unwired_artifacts": UNWIRED_ARTIFACTS
     }
 
 @app.get("/health")
@@ -58,7 +83,8 @@ def health_check():
     return {
         "status": "online",
         "timestamp": time.time(),
-        "models_loaded": True
+        "trained_model_loaded": False,
+        "engine_type": ENGINE_STATUS["type"]
     }
 
 @app.get("/api/presets")
@@ -219,9 +245,19 @@ async def predict(
             "final_diagnosis": {
                 "prediction": prediction,
                 "confidence": round(confidence, 4),
-                "mode": "Multimodal MedCLIP + TabNet Late Fusion" if image_processed and parsed_clinical else ("Vision Only" if image_processed else "Clinical Only")
+                # Describes which inputs were present, not an architecture.
+                # Naming a model here would contradict engine.trained_model_loaded.
+                "mode": "Image + clinical inputs" if image_processed and parsed_clinical else ("Image only" if image_processed else "Clinical only")
             },
             "radiomics": radiomics,
+            "engine": {
+                "type": ENGINE_STATUS["type"],
+                "trained_model_loaded": ENGINE_STATUS["trained_model_loaded"],
+                "scoring_inputs_used": ENGINE_STATUS["scoring_inputs_used"],
+                "inputs_collected_but_unused": ENGINE_STATUS["inputs_collected_but_unused"],
+                "image_used_for_scoring": ENGINE_STATUS["image_used_for_scoring"],
+                "calibrated": ENGINE_STATUS["calibrated"]
+            },
             "recommendations": {
                 "birads_category": birads if birads > 0 else (5 if prediction == "Malignant" else 2),
                 "action": "Immediate Core Needle Biopsy and Surgical Consult Required" if prediction == "Malignant" else "Routine Follow-up Screening in 6-12 Months",

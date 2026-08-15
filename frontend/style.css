@@ -1145,3 +1145,143 @@ h1, h2, h3, h4 {
     color: #a855f7;
     border-color: #a855f7;
 }
+/* =========================================
+   ANALYSIS BASIS — STRUCTURED EVIDENCE VIEW
+   ========================================= */
+.analysis-basis {
+    background: var(--input-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.basis-header h4 {
+    font-size: 1.05rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--text-main);
+}
+.basis-sub {
+    margin-top: 4px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    max-width: 68ch;
+}
+
+.basis-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 1rem;
+}
+
+.basis-block {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 1rem;
+}
+.basis-block h5,
+.basis-limits h5 {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+}
+
+.basis-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.basis-list li {
+    display: grid;
+    grid-template-columns: 16px 1fr;
+    gap: 8px;
+    align-items: start;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: var(--text-main);
+}
+/* Status marker is a glyph plus a distinct shape, never colour alone. */
+.basis-list li::before {
+    content: "\2022";
+    font-weight: 700;
+    text-align: center;
+    color: var(--text-muted);
+}
+.basis-list li.ok::before      { content: "\2713"; color: var(--accent-emerald); }
+.basis-list li.warn::before    { content: "\26A0"; color: var(--accent-gold); }
+.basis-list li.absent::before  { content: "\2014"; color: var(--text-muted); }
+.basis-list li.info::before    { content: "\2022"; color: var(--primary); }
+
+.basis-list .basis-key {
+    color: var(--text-muted);
+    margin-right: 4px;
+}
+.basis-list .basis-val {
+    font-weight: 600;
+    color: var(--text-main);
+    word-break: break-word;
+}
+.basis-list .basis-note {
+    display: block;
+    margin-top: 2px;
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: var(--text-muted);
+}
+
+/* Limitations read as a caution block, without alarm styling. */
+.basis-limits {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-left: 4px solid var(--accent-gold);
+    border-radius: 12px;
+    padding: 1rem;
+}
+.basis-list.limits li {
+    color: var(--text-main);
+}
+
+.basis-status {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    padding-top: 2px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+.basis-status .basis-tag {
+    border: 1px solid var(--glass-border);
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    color: var(--text-main);
+    background: var(--input-bg);
+}
+
+@media (max-width: 640px) {
+    .analysis-basis { padding: 1.1rem; }
+    .basis-grid { grid-template-columns: 1fr; }
+}
+
+@media print {
+    .analysis-basis { break-inside: avoid; border: 1px solid #999; }
+}
+
+/* Offline state for the backend health badge. */
+.status-badge.offline .status-dot {
+    background: var(--accent-gold);
+    box-shadow: 0 0 10px var(--accent-gold);
+    animation: none;
+}
+.status-badge.offline { color: var(--accent-gold); }

@@ -504,14 +504,16 @@ form.addEventListener('submit', async (e) => {
             });
             if (res.ok) {
                 responseData = await res.json();
+                responseData.__engine = 'backend';
             }
         } catch (apiErr) {
-            console.warn("Backend API offline. Switching to Client-Side MedCLIP Ensemble Fallback Engine.", apiErr);
+            console.warn("Backend API unreachable. Falling back to the in-browser rule-based scoring function.", apiErr);
         }
 
         // Execute local fallback if API response not received
         if (!responseData) {
             responseData = simulateClientInference(clinicalData, originalImage);
+            responseData.__engine = 'client';
         }
 
         renderDiagnosticDashboard(responseData);
@@ -529,7 +531,12 @@ form.addEventListener('submit', async (e) => {
 });
 
 /**
- * High-precision Client-Side MedCLIP + TabNet Late Fusion Neural Heuristic Engine
+ * In-browser fallback scoring function, used when the backend is unreachable.
+ *
+ * This is a fixed set of weighted rules over five clinical fields (age, shape,
+ * margin, density, BI-RADS). It loads no model and reads no image data: the
+ * `img` argument is accepted for signature parity with the backend only. The
+ * Analysis Basis panel reports this to the user whenever this path runs.
  */
 function simulateClientInference(clinical, img) {
     let age = clinical.age;
@@ -632,6 +639,24 @@ function renderDiagnosticDashboard(data) {
     document.getElementById('recBirads').innerText = `BI-RADS Category: ${rec.birads_category || 3}`;
     document.getElementById('recAction').innerText = rec.action || 'Follow clinical guidance.';
     document.getElementById('recUrgency').innerText = `Urgency Level: ${rec.urgency || 'MEDIUM'}`;
+
+    // Reflect what was actually analysed rather than a fixed label.
+    const modeBadge = document.getElementById('analysisModeBadge');
+    if (modeBadge) {
+        const hasImage = !!(typeof imageInput !== 'undefined' && imageInput.files && imageInput.files[0]);
+        modeBadge.innerText = hasImage ? 'Image + clinical inputs' : 'Clinical only';
+    }
+
+    // Evidence and limitations behind the numbers above. This panel explains
+    // the result; it must never be able to withhold it, so a failure here
+    // degrades to hiding the panel rather than aborting the render.
+    try {
+        renderAnalysisBasis(data);
+    } catch (err) {
+        console.error('Analysis Basis panel failed to render; hiding it.', err);
+        const basisPanel = document.getElementById('analysisBasisPanel');
+        if (basisPanel) basisPanel.style.display = 'none';
+    }
 }
 
 // Speedometer Gauge Drawing
@@ -1013,3 +1038,154 @@ window.exportDICOMStructuredReport = function() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 };
+// ==========================================
+// 13. ANALYSIS BASIS - DOM ADAPTER
+// ==========================================
+/**
+ * Bridges the page to analysis-basis.js: gathers a snapshot of what was
+ * actually submitted, asks that module what can honestly be said about it, and
+ * renders the rows. All judgement lives in the module (and is unit-tested);
+ * this file only reads and writes the DOM.
+ */
+
+function basisEscape(v) {
+    return String(v).replace(/[&<>"']/g, c => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+}
+
+/**
+ * Renders one evidence row. With a value the label reads as a key and the value
+ * carries the emphasis; without one, the label itself is the statement.
+ */
+function basisRowHtml(row) {
+    const hasValue = row.value !== undefined && row.value !== null && row.value !== '';
+    let body = hasValue
+        ? '<span class="basis-key">' + basisEscape(row.label) + '</span>' +
+          '<span class="basis-val">' + basisEscape(row.value) + '</span>'
+        : '<span class="basis-val">' + basisEscape(row.label) + '</span>';
+    if (row.note) body += '<span class="basis-note">' + basisEscape(row.note) + '</span>';
+    return '<li class="' + row.state + '"><span>' + body + '</span></li>';
+}
+
+function basisActiveMode() {
+    const active = document.querySelector('.tab-btn.active');
+    return active ? active.getAttribute('data-mode') : 'combined';
+}
+
+/** Everything the page knows about this run, read straight from the DOM. */
+function buildBasisSnapshot(data) {
+    const file = (typeof imageInput !== 'undefined' && imageInput.files) ? imageInput.files[0] : null;
+
+    return {
+        mode: basisActiveMode(),
+        clinical: AnalysisBasis.CLINICAL_FIELDS.map(f => {
+            const el = document.getElementById(f.id);
+            return { id: f.id, value: el ? el.value : '' };
+        }),
+        // Present whenever a file was selected. The submit handler uploads it
+        // regardless of whether img.onload has fired, so decoding gates only
+        // the pixel-derived rows, never the fact that it was analysed.
+        image: file ? {
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            decoded: originalImage
+                ? { width: originalImage.width, height: originalImage.height }
+                : null,
+            roiDrawn: (typeof roiPoints !== 'undefined' && roiPoints.length > 0)
+        } : null,
+        result: {
+            prediction: data.prediction,
+            confidence: data.confidence,
+            probabilities: data.probabilities,
+            engine: data.engine,
+            transport: data.__engine
+        }
+    };
+}
+
+function renderAnalysisBasis(data) {
+    const panel = document.getElementById('analysisBasisPanel');
+    if (!panel) return;
+
+    const basis = AnalysisBasis.collect(buildBasisSnapshot(data));
+
+    const put = (id, rows) => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = rows.map(basisRowHtml).join('');
+    };
+    put('basisInput', basis.input);
+    put('basisImage', basis.image);
+    put('basisClinical', basis.clinical);
+    put('basisOutput', basis.output);
+    put('basisLimits', basis.limits);
+
+    const status = document.getElementById('basisStatus');
+    if (status) {
+        status.innerHTML = basis.status
+            .map(t => '<span class="basis-tag">' + basisEscape(t) + '</span>')
+            .join('');
+    }
+
+    panel.style.display = '';
+    return basis;
+}
+
+// ==========================================
+// 14. BACKEND HEALTH INDICATOR
+// ==========================================
+/**
+ * The header badge previously read "AI API: Online" as static markup, which
+ * stayed green while the API was unreachable and the page was silently
+ * scoring in the browser. Probe the endpoint and report what is actually true.
+ */
+async function refreshServerStatus() {
+    const badge = document.getElementById('serverStatus');
+    if (!badge) return;
+    const text = badge.querySelector('.status-text');
+
+    try {
+        const res = await fetch(API_URL + '/health', { cache: 'no-store' });
+        if (!res.ok) throw new Error('health check returned ' + res.status);
+        const body = await res.json();
+
+        badge.className = 'status-badge online';
+        badge.title = 'Backend reachable';
+        text.innerText = body.trained_model_loaded
+            ? 'AI API: Online'
+            : 'AI API: Online (rule-based engine)';
+        basisHealthFailures = 0;
+    } catch (err) {
+        basisHealthFailures += 1;
+        badge.className = 'status-badge offline';
+        badge.title = 'Backend unreachable - results are computed in this browser';
+        text.innerText = 'AI API: Offline (in-browser fallback)';
+    }
+}
+
+// Poll only while the tab is visible, and back off once the endpoint has
+// proven unreachable -- on a deployed HTTPS origin the localhost API is blocked
+// outright, and an un-backed-off poll logs an error every minute forever.
+let basisHealthFailures = 0;
+let basisHealthTimer = null;
+
+function scheduleServerStatus() {
+    clearTimeout(basisHealthTimer);
+    if (document.visibilityState !== 'visible') return;
+
+    const delay = basisHealthFailures >= 3 ? 600000 : 60000;
+    basisHealthTimer = setTimeout(() => {
+        refreshServerStatus().then(scheduleServerStatus);
+    }, delay);
+}
+
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        refreshServerStatus().then(scheduleServerStatus);
+    } else {
+        clearTimeout(basisHealthTimer);
+    }
+});
+
+refreshServerStatus().then(scheduleServerStatus);
