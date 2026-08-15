@@ -1,0 +1,14 @@
+{
+  "name": "oncovision-frontend",
+  "version": "2.5.0",
+  "private": true,
+  "description": "Tests for the OncoVision breast-imaging research interface.",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "jsdom": "^25.0.1",
+    "vitest": "^2.1.8"
+  }
+}
