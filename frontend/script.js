@@ -622,8 +622,15 @@ function renderDiagnosticDashboard(data) {
     document.getElementById('barNormal').style.width = `${nVal}%`;
     document.getElementById('valNormal').innerText = `${nVal}%`;
 
-    // Radar Risk Factors Canvas
+    // Radar Risk Factors Canvas. The canvas itself is unreadable to assistive
+    // technology, so the same figures are mirrored into a live text summary.
     drawRadarChart(data);
+    const radarSummary = document.getElementById('radarSummary');
+    if (radarSummary) {
+        const probs = data.probabilities || {};
+        radarSummary.innerText = 'Risk factor profile. ' + Object.keys(probs)
+            .map(k => `${k} ${(probs[k] * 100).toFixed(1)} percent`).join(', ') + '.';
+    }
 
     // Radiomics
     let rad = data.radiomics || {};
