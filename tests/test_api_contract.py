@@ -12,7 +12,7 @@ import sys
 
 import pytest
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "backend"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 fastapi_testclient = pytest.importorskip(
     "fastapi.testclient", reason="fastapi is not installed in this environment"
@@ -23,7 +23,9 @@ import main  # noqa: E402  (path must be set first)
 
 @pytest.fixture(scope="module")
 def client():
-    return fastapi_testclient.TestClient(main.app)
+    # The context manager runs startup, which decides which engine serves.
+    with fastapi_testclient.TestClient(main.app) as c:
+        yield c
 
 
 @pytest.fixture(scope="module")
