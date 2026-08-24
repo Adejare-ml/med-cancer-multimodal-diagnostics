@@ -1,9 +1,22 @@
+import hashlib
 import logging
 import os
 import gdown
 from pathlib import Path
 
 logger = logging.getLogger("ModelBootstrapper")
+
+# Known secure hash for model_weights.pth
+EXPECTED_WEIGHTS_HASH = "beb0bb417224b29b90abe3f717c18c6687138a3ad4abcfb963254ec730327546"  # SHA256
+
+def verify_file_hash(filepath: Path, expected_hash: str) -> bool:
+    """Verifies that the file at filepath matches the expected SHA256 hash."""
+    sha256_hash = hashlib.sha256()
+    with open(filepath, "rb") as f:
+        for byte_block in iter(lambda: f.read(4096), b""):
+            sha256_hash.update(byte_block)
+    return sha256_hash.hexdigest() == expected_hash
+
 
 def initialize_model_assets(model_dir: str = "models"):
     """
@@ -27,10 +40,20 @@ def initialize_model_assets(model_dir: str = "models"):
         url = f'https://drive.google.com/uc?id={file_id}'
         try:
             gdown.download(url, str(weights_file), quiet=False)
-            logger.info("Weights successfully bootstrapped.")
+
+            # Verify the file's hash before proceeding
+            if not weights_file.exists():
+                raise FileNotFoundError("Weights file was not downloaded.")
+
+            if not verify_file_hash(weights_file, EXPECTED_WEIGHTS_HASH):
+                # Remove the compromised file
+                weights_file.unlink()
+                raise ValueError("Downloaded weights file failed hash verification. The file may be compromised.")
+
+            logger.info("Weights successfully bootstrapped and verified.")
         except Exception as e:
-            logger.critical(f"Bootstrap Failed: Could not retrieve weights: {e}")
-            raise RuntimeError("Environment initialization failed: Weights unreachable.")
+            logger.critical(f"Bootstrap Failed: Could not retrieve or verify weights: {e}")
+            raise RuntimeError(f"Environment initialization failed: {e}")
 
     # 2. Verify other assets
     for asset in required_assets:
