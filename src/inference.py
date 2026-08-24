@@ -59,7 +59,7 @@ class MultimodalCancerPredictor:
             self.scaler_image = joblib.load(self.scaler_image_path)
 
             self.medclip = MedCLIPModel()
-            self.medclip.load_state_dict(torch.load(self.weights_path, map_location=self.device))
+            self.medclip.load_state_dict(torch.load(self.weights_path, map_location=self.device, weights_only=True))
             self.medclip.to(self.device)
             self.medclip.eval()
 
