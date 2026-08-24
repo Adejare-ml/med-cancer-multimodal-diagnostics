@@ -1,5 +1,4 @@
 import logging
-import os
 import gdown
 from pathlib import Path
 
