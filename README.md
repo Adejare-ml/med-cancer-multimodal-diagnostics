@@ -72,6 +72,21 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 ### 3. Clinician Dashboard
 The frontend is designed for zero-config deployment. Open `frontend/index.html` in a modern web browser to begin real-time multimodal inference.
 
+### 4. Test & CI Checks
+Run the browser-facing Vitest suite from the repository root:
+```bash
+npm ci
+npm test
+```
+
+Run the backend contract tests with the lightweight API dependencies:
+```bash
+python -m pip install pytest httpx fastapi python-multipart pillow numpy pydantic
+python -m pytest
+```
+
+The GitHub Actions workflow in `.github/workflows/ci.yml` runs both suites on pushes and pull requests to `main`.
+
 ---
 
 ## 🛠️ Engineering Stack
