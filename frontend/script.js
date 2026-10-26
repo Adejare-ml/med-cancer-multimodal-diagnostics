@@ -774,6 +774,19 @@ window.saveToPatientLog = function() {
     renderHistoryTable();
 };
 
+function escapeHTML(str) {
+    return String(str).replace(/[&<>"']/g, function(match) {
+        const escapeMap = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        };
+        return escapeMap[match];
+    });
+}
+
 function renderHistoryTable() {
     let tbody = document.getElementById('historyTableBody');
     if (historyLog.length === 0) {
@@ -783,12 +796,12 @@ function renderHistoryTable() {
 
     tbody.innerHTML = historyLog.map(item => `
         <tr>
-            <td>${item.date}</td>
-            <td>${item.age}</td>
-            <td>${item.modality}</td>
-            <td><strong style="color:${item.diagnosis === 'Malignant' ? '#f43f5e' : '#10b981'}">${item.diagnosis}</strong></td>
-            <td>${item.conf}</td>
-            <td>BI-RADS ${item.birads}</td>
+            <td>${escapeHTML(item.date)}</td>
+            <td>${escapeHTML(item.age)}</td>
+            <td>${escapeHTML(item.modality)}</td>
+            <td><strong style="color:${item.diagnosis === 'Malignant' ? '#f43f5e' : '#10b981'}">${escapeHTML(item.diagnosis)}</strong></td>
+            <td>${escapeHTML(item.conf)}</td>
+            <td>BI-RADS ${escapeHTML(item.birads)}</td>
         </tr>
     `).join('');
 }
