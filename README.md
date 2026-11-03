@@ -101,7 +101,7 @@ python scripts/probe_model.py --images path/to/images
 
 ## Deploy
 
-`.github/workflows/deploy-space.yml` uploads `src/` to the Hugging Face Space when a `v*` tag is pushed. It needs a repository secret `HF_TOKEN` with write access to the Space. In the Space settings, set `ALLOWED_ORIGINS` to the address the frontend is served from. The frontend builds to `dist/` and can be served from any static host (`npm run build`).
+`.github/workflows/deploy-space.yml` uploads `src/` to the Hugging Face Space when a `v*` tag is pushed. It needs a repository secret `HF_TOKEN` with write access to the Space. In the Space settings, set `ALLOWED_ORIGINS` to the address the frontend is served from. The frontend builds to `dist/` and can be served from any static host. Production builds call the Space API (`.env.production`). On Cloudflare Pages, use build command `npm run build`, output directory `dist`, root directory `/`. The API already accepts requests from `*.breast-cancer-predictor.pages.dev` (`ALLOWED_ORIGIN_REGEX`).
 
 ## Credits
 

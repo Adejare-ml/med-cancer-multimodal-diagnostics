@@ -31,6 +31,12 @@ class Settings:
             "http://localhost:5173,http://127.0.0.1:5173,http://localhost:4173,http://127.0.0.1:4173",
         )
     )
+    # The Cloudflare Pages site and its per-branch previews (https://<branch>.breast-cancer-predictor.pages.dev).
+    allowed_origin_regex: str = field(
+        default_factory=lambda: os.getenv(
+            "ALLOWED_ORIGIN_REGEX", r"https://([a-z0-9-]+\.)?breast-cancer-predictor\.pages\.dev"
+        )
+    )
     model_dir: str = field(default_factory=lambda: os.getenv("MODEL_DIR", "models"))
     hf_model_repo: str = field(
         default_factory=lambda: os.getenv("HF_MODEL_REPO", "AdejareworkStudio/Breast_cancer_predictor")

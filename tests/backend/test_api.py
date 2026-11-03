@@ -109,3 +109,13 @@ def test_cors_allows_only_configured_origin(make_client):
         bad = c.options("/health", headers={"Origin": "https://evil.example", "Access-Control-Request-Method": "GET"})
     assert ok.headers.get("access-control-allow-origin") == "http://localhost:5173"
     assert "access-control-allow-origin" not in bad.headers
+
+
+def test_cors_allows_the_pages_site_and_its_previews(make_client):
+    def preflight(c, origin):
+        return c.options("/health", headers={"Origin": origin, "Access-Control-Request-Method": "GET"}).headers
+
+    with make_client() as c:
+        for origin in ("https://breast-cancer-predictor.pages.dev", "https://rework-v3.breast-cancer-predictor.pages.dev"):
+            assert preflight(c, origin).get("access-control-allow-origin") == origin
+        assert "access-control-allow-origin" not in preflight(c, "https://breast-cancer-predictor.pages.dev.evil.example")
