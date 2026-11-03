@@ -1,21 +1,32 @@
-# Use a lightweight Python version
-FROM python:3.9-slim
+# Jvision API for a Hugging Face Space (Docker SDK, port 7860).
+FROM python:3.10-slim
 
-# Set working directory
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
-# Copy requirements and install dependencies
-# We use --no-cache-dir to keep the image small
-COPY requirements.txt .
+# torch wheels first: big and rarely changed, so they cache as their own layer.
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu torch && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu \
+        torch==2.3.0 torchvision==0.18.0
 
-# Copy the rest of the application
-COPY . .
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt \
+        --extra-index-url https://download.pytorch.org/whl/cpu
 
-# Create the results directory so the code doesn't crash
-RUN mkdir -p results
+COPY app ./app
 
-# Command to run the app (Hugging Face listens on port 7860)
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860"]
+# Weights download at startup from the Space repo, pinned to MODEL_REVISION (see app/config.py).
+# Set ALLOWED_ORIGINS in the Space settings to the address the frontend is served from.
+ENV MODEL_DIR=/app/models \
+    HF_HOME=/app/.cache/huggingface \
+    ALLOWED_ORIGINS="http://localhost:5173,http://localhost:4173"
+
+RUN useradd -m -u 1000 appuser && mkdir -p /app/models /app/.cache && chown -R appuser /app
+USER appuser
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=180s --retries=3 \
+    CMD curl -fs http://localhost:7860/health || exit 1
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7860", "--workers", "1"]

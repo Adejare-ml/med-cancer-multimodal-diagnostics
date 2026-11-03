@@ -1,13 +1,12 @@
---extra-index-url https://download.pytorch.org/whl/cpu
-torch
-fastapi
-uvicorn
-python-multipart
-pandas
-numpy
-scikit-learn
-pytorch-tabnet
-medclip
-Pillow
-joblib
-gdown  
+# Runtime for the Jvision API. torch/torchvision come from the CPU index (see Dockerfile).
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+python-multipart==0.0.20
+pydantic==2.10.4
+pillow==11.0.0
+numpy==1.26.4
+huggingface_hub==0.27.0
+torch==2.3.0
+torchvision==0.18.0
+pytorch-tabnet==4.1.0
+pandas==2.2.3  # imported by pytorch-tabnet

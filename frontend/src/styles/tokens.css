@@ -1,0 +1,67 @@
+/* Jvision tokens. Style: achromatic ledger (design-taste-frontend app sheet, seed 1863330993).
+   Face: a blue-grey ground from the reading room; the one hue (--chart-3) only on the predicted class. */
+:root {
+  color-scheme: light;
+  --ground: #f2f4f7;
+  --surface: #ffffff;
+  --raised: #eceef2;
+  --border: #e3e6eb;
+  --rule: #eef0f3;
+  --control: #cfd4db;
+  --text: #0b0d10;
+  --muted: #5f6670;
+  --accent: #14161a;
+  --accent-ink: #ffffff;
+  --negative: #c4242a;
+  --warning: #92400e;
+  --chart-1: #14161a;
+  --chart-2: #b9bfc8;
+  --chart-3: #1d5fbf;
+  --pill-positive-bg: #dcfae5; --pill-positive-ink: #04250e;
+  --pill-negative-bg: #ffedea; --pill-negative-ink: #831c1e;
+  --pill-warning-bg: #fff6e0; --pill-warning-ink: #7a3609;
+  --pill-neutral-bg: #eceef2; --pill-neutral-ink: #3a3f47;
+  --focus: #1d5fbf;
+
+  --radius-card: 8px;
+  --radius-control: 6px;
+  --gap: 12px;
+  --pad: 24px;
+  --control-height: 36px;
+
+  --fs-title: 24px;
+  --fs-section: 16px;
+  --fs-kpi: 36px;
+  --fs-body: 14px;
+  --fs-small: 12px;
+
+  --font: 'Geist', Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --ground: #0c0e11;
+  --surface: #14171b;
+  --raised: #1c2026;
+  --border: #252a31;
+  --rule: #1d2127;
+  --control: #39404a;
+  --text: #eef1f5;
+  --muted: #9aa3ae;
+  --accent: #eef1f5;
+  --accent-ink: #0c0e11;
+  --negative: #ff7a73;
+  --warning: #f3b35b;
+  --chart-1: #eef1f5;
+  --chart-2: #4a525d;
+  --chart-3: #6ea2f2;
+  --pill-positive-bg: #0f2c19; --pill-positive-ink: #a6f0bf;
+  --pill-negative-bg: #3a1513; --pill-negative-ink: #ffc1bb;
+  --pill-warning-bg: #33230b; --pill-warning-ink: #f8d49a;
+  --pill-neutral-bg: #1f242b; --pill-neutral-ink: #c9d0d8;
+  --focus: #6ea2f2;
+}

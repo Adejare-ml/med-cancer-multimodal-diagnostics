@@ -1,740 +1,187 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Breast Cancer AI Diagnostic Platform | Multimodal MedCLIP & TabNet System</title>
-    <meta name="description" content="State-of-the-art AI-powered Multimodal Breast Cancer Diagnostic Platform featuring MedCLIP Vision Transformers, TabNet Clinical Classifiers, Radiomics Feature Extraction, and Automated Modality Auto-Routing.">
-    <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
-</head>
-<body>
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Jvision · Case review</title>
+    <meta name="description" content="Jvision is a research prototype that runs a breast-ultrasound image model and shows its result with the checks behind it. Not for diagnosis." />
+    <meta name="theme-color" content="#f2f4f7" />
+    <meta property="og:title" content="Jvision" />
+    <meta property="og:description" content="Breast ultrasound, read with its limits. A research prototype, not for diagnosis." />
+    <meta property="og:image" content="/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <script>
+      try {
+        const t = localStorage.getItem('jvision:theme');
+        if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.dataset.theme = 'dark';
+      } catch {}
+    </script>
+    <script type="module" src="/src/main.ts"></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to the case</a>
 
-    <!-- Animated Neural Background Canvas -->
-    <canvas id="neuralCanvas" aria-hidden="true"></canvas>
-
-    <!-- Ambient Glowing Orbs -->
-    <div class="ambient-orb orb-1"></div>
-    <div class="ambient-orb orb-2"></div>
-    <div class="ambient-orb orb-3"></div>
-
-    <!-- Top Navigation Header -->
-    <header class="top-nav glass-nav">
-        <div class="nav-container">
-            <div class="brand">
-                <div class="logo-icon">🎗️</div>
-                <div class="brand-text">
-                    <span class="brand-title">OncoVision AI</span>
-                    <span class="brand-badge">v2.5 Enterprise</span>
-                </div>
-            </div>
-
-            <!-- Server Status & Controls -->
-            <div class="nav-controls">
-                <div id="serverStatus" class="status-badge online" title="Backend Server Status">
-                    <span class="status-dot"></span>
-                    <span class="status-text">AI API: Online</span>
-                </div>
-
-                <!-- Language Selector -->
-                <div class="lang-selector">
-                    <select id="languageSelect" aria-label="Select Language">
-                        <option value="en">🇺🇸 English</option>
-                        <option value="es">🇪🇸 Español</option>
-                        <option value="fr">🇫🇷 Français</option>
-                        <option value="yo">🇳🇬 Yorùbá</option>
-                        <option value="ha">🇳🇬 Hausa</option>
-                        <option value="ig">🇳🇬 Igala/Igbo</option>
-                    </select>
-                </div>
-
-                <!-- Audio Readout Button -->
-                <button id="voiceBtn" class="icon-btn" title="Toggle Audio Voice Readout (Text-to-Speech)" aria-label="Text to speech">
-                    <span>🔊</span>
-                </button>
-
-                <!-- History Log Drawer Button -->
-                <button id="historyDrawerBtn" class="icon-btn" title="Patient Case History" aria-label="Open History Log">
-                    <span>📁 Log</span>
-                </button>
-
-                <!-- BI-RADS Glossary Modal Button -->
-                <button id="glossaryBtn" class="icon-btn" title="BI-RADS & Radiomics Guide" aria-label="Open Guide">
-                    <span>📖 Guide</span>
-                </button>
-
-                <!-- Light/Dark Mode Switcher -->
-                <button id="themeToggle" class="theme-toggle-btn" aria-label="Toggle Theme">
-                    <span class="icon-sun">☀️</span>
-                    <span class="icon-moon">🌙</span>
-                </button>
-            </div>
-        </div>
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Jvision home">
+        <svg class="mark" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="10.5" fill="none" stroke="currentColor" stroke-width="1.5" />
+          <path d="M14.5 6.5v7.25a3.25 3.25 0 0 1-6.5 0" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
+          <circle cx="14.5" cy="6.5" r="1.4" fill="var(--chart-3)" />
+        </svg>
+        <span class="brand-name">Jvision</span>
+      </a>
+      <span class="scope muted">Research prototype</span>
+      <div class="topbar-end">
+        <span class="pill status" id="service-status" data-tone="neutral" role="status" aria-live="polite">Checking models</span>
+        <button type="button" class="btn ghost" id="open-history" aria-haspopup="dialog" aria-controls="history">History</button>
+        <button type="button" class="btn ghost icon" id="theme-toggle" aria-label="Switch to dark theme">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" /></svg>
+        </button>
+      </div>
     </header>
 
-    <!-- Main Workspace Container -->
-    <main class="main-layout">
-        
-        <!-- Platform Hero Banner -->
-        <section class="hero-banner glass-panel">
-            <div class="hero-content">
-                <h1 class="hero-title">Multimodal Breast Cancer Diagnostic Studio</h1>
-                <p class="hero-subtitle">
-                    Integrated AI Pipeline combining <strong>MedCLIP Vision Transformers</strong>, 
-                    <strong>TabNet Deep Clinical Classifier</strong>, <strong>ResNet Modality Auto-Routing</strong>, 
-                    and <strong>Radiomics Texture Feature Engine</strong>.
-                </p>
-                <div class="hero-tags">
-                    <span class="tag">⚡ Auto Modality Classifier (100% Acc)</span>
-                    <span class="tag">🔬 MedCLIP 384x384 Specialist</span>
-                    <span class="tag">📊 TabNet Clinical Fusion</span>
-                    <span class="tag">📐 Radiomic Shape & Intensity Analysis</span>
-                </div>
+    <main id="main" class="canvas">
+      <div class="title-row">
+        <div>
+          <h1>Case review</h1>
+          <p class="muted">Research use only. The result is a model output, not a diagnosis.</p>
+        </div>
+        <div class="title-actions">
+          <button type="button" class="btn ghost" id="print-report" disabled>Print report</button>
+          <button type="submit" class="btn primary" id="run" form="case-form" disabled>Run analysis</button>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="col">
+        <form id="case-form" class="panel inputs" novalidate>
+          <section aria-labelledby="image-h">
+            <div class="panel-head">
+              <h2 id="image-h">Image</h2>
+              <div class="sample-menu">
+                <label class="visually-hidden" for="sample">Load a sample image</label>
+                <select id="sample" class="select compact">
+                  <option value="">Load a sample…</option>
+                  <option value="busi-benign-50.png">BUSI ultrasound, labelled benign</option>
+                  <option value="busi-malignant-50.png">BUSI ultrasound, labelled malignant</option>
+                </select>
+              </div>
             </div>
-        </section>
-
-        <!-- Presets Toolbar -->
-        <section class="presets-section glass-panel">
-            <div class="presets-header">
-                <span class="presets-label">🚀 Quick Sample Cases:</span>
-                <span class="presets-help">Load verified medical test presets to evaluate the pipeline in 1-click.</span>
+            <label class="drop" id="drop" for="image-input">
+              <input type="file" id="image-input" name="image" accept="image/png,image/jpeg,image/bmp,image/tiff,image/webp" class="visually-hidden" />
+              <span class="drop-empty" id="drop-empty">
+                <span class="drop-title">Drop an ultrasound image or <u>choose a file</u></span>
+                <span class="muted small">PNG, JPEG, BMP, TIFF or WebP, up to 10 MB</span>
+              </span>
+              <img id="preview" alt="" hidden />
+            </label>
+            <div class="file-row" id="file-row" hidden>
+              <span class="file-name" id="file-name"></span>
+              <button type="button" class="btn ghost small" id="clear-image">Remove</button>
             </div>
-            <div class="presets-buttons">
-                <button type="button" class="preset-btn" onclick="loadPreset('benign')">
-                    🟢 Preset 1: Benign Fibroadenoma (Ultrasound)
-                </button>
-                <button type="button" class="preset-btn" onclick="loadPreset('malignant')">
-                    🔴 Preset 2: Invasive Carcinoma (Mammogram)
-                </button>
-                <button type="button" class="preset-btn" onclick="loadPreset('cyst')">
-                    🔵 Preset 3: Simple Breast Cyst (Normal/Benign)
-                </button>
-                <button type="button" class="preset-btn clear" onclick="resetForm()">
-                    🔄 Clear All
-                </button>
-            </div>
-        </section>
+            <p class="field-error" id="image-error" role="alert" hidden></p>
+          </section>
 
-        <!-- Mode Tabs Selection -->
-        <nav class="tabs-container glass-panel">
-            <button class="tab-btn active" data-mode="combined" onclick="switchTab('combined')">
-                <span class="tab-icon">🧬</span> Full Multimodal Fusion
-            </button>
-            <button class="tab-btn" data-mode="ultrasound" onclick="switchTab('ultrasound')">
-                <span class="tab-icon">📡</span> Ultrasound Specialist
-            </button>
-            <button class="tab-btn" data-mode="mammogram" onclick="switchTab('mammogram')">
-                <span class="tab-icon">🩻</span> Mammogram Specialist
-            </button>
-            <button class="tab-btn" data-mode="clinical" onclick="switchTab('clinical')">
-                <span class="tab-icon">📋</span> Clinical Data Only
-            </button>
-            <button class="tab-btn" data-mode="radiomics" onclick="switchTab('radiomics')">
-                <span class="tab-icon">📐</span> Radiomic Feature Lab
-            </button>
-        </nav>
-
-        <!-- Main Form & Image Studio -->
-        <form id="diagnosticForm" class="diagnostic-grid">
-            
-            <!-- Left Column: Image Input & DICOM/Canvas Studio -->
-            <div id="section-image" class="form-column glass-panel">
-                <div class="section-header">
-                    <h2 class="section-heading">1. Image Diagnostic Studio</h2>
-                    <span class="section-badge" id="modalityBadge">Auto-Detect Active</span>
-                </div>
-                
-                <div class="upload-dropzone" id="dropZone">
-                    <input type="file" id="imageInput" accept="image/png, image/jpeg, image/tiff, .dcm" class="file-input">
-                    <div class="upload-placeholder" id="uploadPlaceholder">
-                        <div class="upload-icon">📁</div>
-                        <p class="upload-text"><strong>Drag & Drop Scan Here</strong> or click to browse</p>
-                        <small class="upload-hint">Supports DICOM, PNG, JPEG, TIFF (USG / Mammogram)</small>
-                        <div class="camera-option">
-                            <button type="button" class="btn-secondary" id="cameraBtn">📷 Capture from WebCam</button>
-                        </div>
-                    </div>
-                    <div class="canvas-wrapper" id="canvasWrapper" style="display:none;">
-                        <canvas id="imageCanvas" role="img" aria-label="Uploaded scan preview"></canvas>
-                    </div>
-                </div>
-
-                <!-- Interactive Image Adjustments & ROI Toolbar -->
-                <div class="image-toolbar glass-panel" id="imageToolbar" style="display:none;">
-                    <div class="toolbar-group">
-                        <label>Brightness</label>
-                        <input type="range" id="brightSlider" min="-100" max="100" value="0">
-                    </div>
-                    <div class="toolbar-group">
-                        <label>Contrast</label>
-                        <input type="range" id="contrastSlider" min="50" max="200" value="100">
-                    </div>
-                    <div class="toolbar-actions">
-                        <button type="button" class="tool-btn" id="btnInvert" title="Invert Colors">🌓 Invert</button>
-                        <button type="button" class="tool-btn" id="btnHeatmap" title="Grad-CAM Thermal Heatmap">🔥 Heatmap</button>
-                        <button type="button" class="tool-btn" id="btnROI" title="Draw Lesion ROI Mask">✏️ Draw ROI</button>
-                        <button type="button" class="tool-btn" id="btn3DSlice" onclick="toggle3DSliceViewer()" title="3D Volumetric Multi-Planar Slice View">🧊 3D Slices</button>
-                        <button type="button" class="tool-btn" id="btnCompare" onclick="toggleCompareStudio()" title="Longitudinal Scan Comparison">📊 Compare</button>
-                        <button type="button" class="tool-btn" id="btnResetImg" title="Reset Image">🔄 Reset</button>
-                    </div>
-                </div>
-
-                <!-- 3D Volumetric Multi-Planar Slice View Panel -->
-                <div class="volumetric-panel glass-panel" id="volumetricPanel" style="display:none;">
-                    <div class="panel-header">
-                        <h4>🧊 3D Multi-Planar Slice Viewer</h4>
-                        <span class="badge" id="slicePlaneBadge">Axial View</span>
-                    </div>
-                    <div class="slice-controls">
-                        <label>Plane:</label>
-                        <button type="button" class="tool-btn active" onclick="setSlicePlane('axial')">Axial</button>
-                        <button type="button" class="tool-btn" onclick="setSlicePlane('sagittal')">Sagittal</button>
-                        <button type="button" class="tool-btn" onclick="setSlicePlane('coronal')">Coronal</button>
-                    </div>
-                    <div class="slice-slider-box">
-                        <label>Depth Slice: <span id="sliceNumText">Slice 16/32</span></label>
-                        <input type="range" id="sliceSlider" min="1" max="32" value="16" oninput="updateSliceView(this.value)">
-                    </div>
-                </div>
-
-                <!-- Longitudinal Scan Comparison Studio Panel -->
-                <div class="compare-studio-panel glass-panel" id="compareStudioPanel" style="display:none;">
-                    <div class="panel-header">
-                        <h4>📊 Longitudinal Lesion Growth Studio</h4>
-                        <span class="badge" id="growthBadge">Baseline vs Current</span>
-                    </div>
-                    <div class="compare-grid">
-                        <div class="compare-box">
-                            <h5>Baseline Scan (Prior 6 Mo)</h5>
-                            <canvas id="baselineCanvas" width="200" height="200"></canvas>
-                            <span class="comp-stat">No volumetry</span>
-                        </div>
-                        <div class="compare-box">
-                            <h5>Current Scan (Today)</h5>
-                            <canvas id="currentCompCanvas" width="200" height="200"></canvas>
-                            <span class="comp-stat" id="currentVolStat">No volumetry</span>
-                        </div>
-                    </div>
-                    <div class="growth-metric-box">
-                        <span class="metric-label">Growth rate:</span>
-                        <strong class="metric-val" id="growthRateVal">Not available</strong>
-                        <small class="metric-note">Requires two registered studies with segmented lesion
-                        volumes. Neither is produced by this build.</small>
-                    </div>
-                </div>
-
-                <!-- ROI Lesion Measurement Info -->
-                <div id="roiStats" class="roi-stats-card glass-panel" style="display:none;">
-                    <h4>📐 ROI Lesion Measurements:</h4>
-                    <div class="stats-row">
-                        <span>Lesion Area: <strong id="roiArea">0 px²</strong></span>
-                        <span>Aspect Ratio: <strong id="roiAspect">1.0</strong></span>
-                        <span>Estimated Diam: <strong id="roiDiam">0 mm</strong></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Column: Clinical Parameters Matrix -->
-            <div id="section-clinical" class="form-column glass-panel">
-                <div class="section-header">
-                    <h2 class="section-heading">2. Clinical & Biomarker Matrix</h2>
-                    <span class="section-badge">TabNet 9-Feature Schema</span>
-                </div>
-
-                <div class="form-fields-grid">
-                    
-                    <!-- Age -->
-                    <div class="input-field">
-                        <label for="age">Patient Age (Years)</label>
-                        <input type="number" id="age" name="age" min="18" max="100" value="50" required>
-                        <small class="field-hint">Primary demographic factor in incidence weighting.</small>
-                    </div>
-
-                    <!-- BI-RADS Assessment -->
-                    <div class="input-field">
-                        <label for="birads">BI-RADS Category</label>
-                        <select id="birads" name="birads">
-                            <option value="1">BI-RADS 1: Negative / Normal</option>
-                            <option value="2">BI-RADS 2: Benign Finding</option>
-                            <option value="3" selected>BI-RADS 3: Probably Benign (< 2% Malignant)</option>
-                            <option value="4">BI-RADS 4: Suspicious (2% - 95% Malignant)</option>
-                            <option value="5">BI-RADS 5: Highly Suggestive of Malignancy (≥ 95%)</option>
-                            <option value="6">BI-RADS 6: Biopsy Proven Malignancy</option>
-                        </select>
-                        <small class="field-hint">Standard ACR Breast Imaging Reporting System classification.</small>
-                    </div>
-
-                    <!-- Lesion Shape -->
-                    <div class="input-field">
-                        <label for="shape">Lesion Shape</label>
-                        <select id="shape" name="shape">
-                            <option value="unknown">Unknown / Not Evaluated</option>
-                            <option value="oval">Oval (Typically Benign)</option>
-                            <option value="round">Round</option>
-                            <option value="lobular">Lobular</option>
-                            <option value="irregular">Irregular (High Malignancy Risk)</option>
-                        </select>
-                        <small class="field-hint">Geometric mass contour configuration.</small>
-                    </div>
-
-                    <!-- Margin Type -->
-                    <div class="input-field">
-                        <label for="margin">Margin Characteristics</label>
-                        <select id="margin" name="margin">
-                            <option value="unknown">Unknown</option>
-                            <option value="circumscribed">Circumscribed (Smooth & Well-defined)</option>
-                            <option value="microlobulated">Microlobulated</option>
-                            <option value="obscured">Obscured by Tissue</option>
-                            <option value="indistinct">Indistinct / Ill-defined</option>
-                            <option value="spiculated">Spiculated (Radiating Lines - Malignant Sign)</option>
-                        </select>
-                        <small class="field-hint">Border definition between mass and parenchymal tissue.</small>
-                    </div>
-
-                    <!-- Tissue Density / Echogenicity -->
-                    <div class="input-field">
-                        <label for="density">Tissue Density / Echogenicity</label>
-                        <select id="density" name="density">
-                            <option value="unknown">Unknown</option>
-                            <option value="anechoic">Anechoic (Fluid-filled Cyst)</option>
-                            <option value="fatty">Fatty / Hypoechoic</option>
-                            <option value="fibroglandular">Fibroglandular / Isoechoic</option>
-                            <option value="heterogeneous">Heterogeneous Dense</option>
-                            <option value="dense">Extremely Dense (Masks Lesions)</option>
-                        </select>
-                        <small class="field-hint">Background parenchymal density or acoustic impedance.</small>
-                    </div>
-
-                    <!-- Microcalcifications -->
-                    <div class="input-field">
-                        <label for="calcifications">Calcification Pattern</label>
-                        <select id="calcifications" name="calcifications">
-                            <option value="none">None Detected</option>
-                            <option value="coarse">Coarse / Popcorn (Benign)</option>
-                            <option value="microcalcifications">Pleomorphic Microcalcifications (Suspicious)</option>
-                        </select>
-                        <small class="field-hint">Mineral deposits identified on mammography.</small>
-                    </div>
-
-                    <!-- Lesion Size (mm) -->
-                    <div class="input-field">
-                        <label for="lesion_size_mm">Lesion Size (mm)</label>
-                        <input type="number" id="lesion_size_mm" name="lesion_size_mm" min="1" max="150" value="15" step="0.5">
-                        <small class="field-hint">Maximum diameter in millimeters measured on scan.</small>
-                    </div>
-
-                    <!-- Family History -->
-                    <div class="input-field">
-                        <label for="family_history">Family History of Breast Cancer?</label>
-                        <select id="family_history" name="family_history">
-                            <option value="no">No</option>
-                            <option value="yes">Yes (First-degree relative)</option>
-                        </select>
-                        <small class="field-hint">Genetic predisposition risk factor.</small>
-                    </div>
-
-                    <!-- Prior Biopsy -->
-                    <div class="input-field">
-                        <label for="prior_biopsy">Prior Breast Biopsy?</label>
-                        <select id="prior_biopsy" name="prior_biopsy">
-                            <option value="no">No</option>
-                            <option value="yes">Yes</option>
-                        </select>
-                        <small class="field-hint">Previous histological evaluation history.</small>
-                    </div>
-
-                </div>
-
-                <!-- Submit Button -->
-                <button type="submit" id="submitBtn" class="primary-btn glass-btn">
-                    <span class="btn-text">🔬 Execute AI Multimodal Prediction</span>
-                    <span class="btn-spinner" style="display:none;">⏳ Analyzing Features...</span>
-                </button>
-
-            </div>
+          <details class="clinical" id="clinical">
+            <summary>
+              <span class="summary-title">Clinical details <span class="muted">(optional)</span></span>
+              <span class="muted small">Recorded with the case. The current models do not use them.</span>
+            </summary>
+            <fieldset>
+              <legend>Patient</legend>
+              <div class="fields">
+                <label class="field"><span>Age</span><input class="input" type="number" name="age" min="18" max="110" inputmode="numeric" placeholder="years" /></label>
+                <label class="field check"><input type="checkbox" name="family_history" /><span>Family history of breast cancer</span></label>
+                <label class="field check"><input type="checkbox" name="prior_biopsy" /><span>Prior breast biopsy</span></label>
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend>Imaging findings</legend>
+              <div class="fields">
+                <label class="field"><span>BI-RADS</span><select class="select" name="birads" data-options="birads"><option value="">Not given</option></select></label>
+                <label class="field"><span>Shape</span><select class="select" name="shape" data-options="shape"></select></label>
+                <label class="field"><span>Margin</span><select class="select" name="margin" data-options="margin"></select></label>
+                <label class="field"><span>Density or echo pattern</span><select class="select" name="density" data-options="density"></select></label>
+                <label class="field"><span>Lesion size</span><span class="with-unit"><input class="input" type="number" name="lesion_size_mm" min="0" max="200" step="0.1" inputmode="decimal" /><span class="unit muted">mm</span></span></label>
+                <label class="field check"><input type="checkbox" name="calcifications" /><span>Calcifications present</span></label>
+              </div>
+            </fieldset>
+            <p class="field-error" id="clinical-error" role="alert" hidden></p>
+            <button type="button" class="btn ghost small" id="clear-clinical">Clear clinical details</button>
+          </details>
         </form>
-
-        <!-- Interactive AI Results & Diagnostic Dashboard -->
-        <section id="resultSection" class="results-layout glass-panel" style="display:none;">
-            
-            <div class="results-header">
-                <h3>Diagnostic Evaluation Summary</h3>
-                <span id="analysisModeBadge" class="mode-badge">Multimodal Fusion</span>
-            </div>
-
-            <div class="results-grid">
-                
-                <!-- Main Prediction Gauge & Primary Card -->
-                <div class="result-card main-prediction">
-                    <div class="prediction-badge-wrapper">
-                        <div id="diagnosisBadge" class="diagnosis-badge">Evaluating...</div>
-                    </div>
-                    <div class="confidence-gauge-container">
-                        <canvas id="gaugeCanvas" aria-hidden="true" width="220" height="140"></canvas>
-                        <div class="gauge-value" id="gaugeValue">0.0%</div>
-                        <div class="gauge-label">AI System Confidence</div>
-                    </div>
-                    <div class="modality-routing-info">
-                        <span>Modality label: <strong id="detectedModalityText">&mdash;</strong></span>
-                        <small>Derived from image orientation only. No modality classifier runs in this build.</small>
-                    </div>
-                </div>
-
-                <!-- Ensemble Probabilities & Radar Chart -->
-                <div class="result-card ensemble-breakdown">
-                    <h4>Model Probability Breakdown</h4>
-                    <div class="prob-bars">
-                        <div class="prob-row">
-                            <span class="prob-label">Malignant (Cancer)</span>
-                            <div class="prob-bar-track">
-                                <div id="barMalignant" class="prob-bar-fill malignant" style="width: 0%;"></div>
-                            </div>
-                            <span id="valMalignant" class="prob-val">0%</span>
-                        </div>
-                        <div class="prob-row">
-                            <span class="prob-label">Benign (Non-Cancerous)</span>
-                            <div class="prob-bar-track">
-                                <div id="barBenign" class="prob-bar-fill benign" style="width: 0%;"></div>
-                            </div>
-                            <span id="valBenign" class="prob-val">0%</span>
-                        </div>
-                        <div class="prob-row">
-                            <span class="prob-label">Normal (No Lesion)</span>
-                            <div class="prob-bar-track">
-                                <div id="barNormal" class="prob-bar-fill normal" style="width: 0%;"></div>
-                            </div>
-                            <span id="valNormal" class="prob-val">0%</span>
-                        </div>
-                    </div>
-
-                    <!-- Risk Factors Radar Canvas -->
-                    <div class="radar-wrapper">
-                        <canvas id="radarCanvas" role="img" aria-label="Risk factor profile chart. A text summary follows." width="220" height="180"></canvas>
-                    <p id="radarSummary" class="visually-hidden" aria-live="polite"></p>
-                    </div>
-                </div>
-
-                <!-- Radiomics Features Card -->
-                <div class="result-card radiomics-card">
-                    <h4>📐 Radiomic Texture & Shape Metrics</h4>
-                    <div class="radiomics-grid" id="radiomicsGrid">
-                        <div class="rad-item"><span>Area:</span> <strong id="radArea">-- mm²</strong></div>
-                        <div class="rad-item"><span>Perimeter:</span> <strong id="radPerimeter">-- mm</strong></div>
-                        <div class="rad-item"><span>Eccentricity:</span> <strong id="radEccentricity">--</strong></div>
-                        <div class="rad-item"><span>Solidity:</span> <strong id="radSolidity">--</strong></div>
-                        <div class="rad-item"><span>Mean Intensity:</span> <strong id="radIntensity">--</strong></div>
-                        <div class="rad-item"><span>Aspect Ratio:</span> <strong id="radAspect">--</strong></div>
-                    </div>
-                </div>
-
-                <!-- SHAP Model Explainability Feature Drivers Dashboard -->
-                <div class="result-card shap-card">
-                    <h4>🔍 SHAP Model Explainability Drivers</h4>
-                    <p class="shap-sub">Feature attribution values influencing the current AI diagnostic decision:</p>
-                    <div class="shap-drivers-list" id="shapDriversList">
-                        <div class="shap-row positive">
-                            <span class="driver-name">Mass Margin Spiculation</span>
-                            <div class="driver-bar-track"><div class="driver-bar pos" style="width: 75%;"></div></div>
-                            <span class="driver-score">+0.38 (High Risk)</span>
-                        </div>
-                        <div class="shap-row positive">
-                            <span class="driver-name">Microcalcifications Density</span>
-                            <div class="driver-bar-track"><div class="driver-bar pos" style="width: 62%;"></div></div>
-                            <span class="driver-score">+0.29 (High Risk)</span>
-                        </div>
-                        <div class="shap-row positive">
-                            <span class="driver-name">ACR BI-RADS Category</span>
-                            <div class="driver-bar-track"><div class="driver-bar pos" style="width: 50%;"></div></div>
-                            <span class="driver-score">+0.22 (High Risk)</span>
-                        </div>
-                        <div class="shap-row negative">
-                            <span class="driver-name">Patient Age (< 45)</span>
-                            <div class="driver-bar-track"><div class="driver-bar neg" style="width: 30%;"></div></div>
-                            <span class="driver-score">-0.14 (Protective)</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Multi-Modal AI Consensus Fusion Breakdown Card -->
-                <div class="result-card fusion-card">
-                    <h4>🔀 Multi-Modal AI Consensus Weighting</h4>
-                    <p class="shap-sub">Cross-modality fusion is not implemented. This build scores a single
-                    ultrasound or mammogram input; no DBT, MRI or genomic pipeline exists, so no
-                    per-modality values are available to display.</p>
-                    <div class="fusion-list">
-                        <div class="fusion-row">
-                            <span class="fusion-label">Mammography / DBT</span>
-                            <div class="prob-bar-track"><div id="fusionMammo" class="prob-bar-fill" style="width: 0%;"></div></div>
-                            <span id="valMammo" class="prob-val">No data</span>
-                        </div>
-                        <div class="fusion-row">
-                            <span class="fusion-label">Dynamic MRI kinetics</span>
-                            <div class="prob-bar-track"><div id="fusionMRI" class="prob-bar-fill" style="width: 0%;"></div></div>
-                            <span id="valMRI" class="prob-val">No data</span>
-                        </div>
-                        <div class="fusion-row">
-                            <span class="fusion-label">Ultrasound radiomics</span>
-                            <div class="prob-bar-track"><div id="fusionUSG" class="prob-bar-fill" style="width: 0%;"></div></div>
-                            <span id="valUSG" class="prob-val">No data</span>
-                        </div>
-                        <div class="fusion-row">
-                            <span class="fusion-label">Genomic risk score</span>
-                            <div class="prob-bar-track"><div id="fusionGeno" class="prob-bar-fill" style="width: 0%;"></div></div>
-                            <span id="valGeno" class="prob-val">No data</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Multi-Disciplinary Team (MDT) Tumor Board Collaborative Simulator -->
-                <div class="result-card mdt-card">
-                    <div class="mdt-header">
-                        <h4>👥 MDT Tumor Board AI Consensus</h4>
-                        <button type="button" class="tool-btn pulse" onclick="runMDTConsultation()">⚡ Run MDT Consult</button>
-                    </div>
-                    <div class="mdt-chat-feed" id="mdtChatFeed">
-                        <div class="mdt-msg radio">
-                            <strong class="mdt-author">Dr. Sarah Chen (Radiology AI):</strong>
-                            <p>Mass exhibits irregular margins and posterior acoustic shadowing on ultrasound. Recommended BI-RADS 4C/5 assignment.</p>
-                        </div>
-                        <div class="mdt-msg patho">
-                            <strong class="mdt-author">Dr. Marcus Vance (Pathology AI):</strong>
-                            <p>Correlates with high-grade invasive ductal carcinoma (IDC) features. Core needle biopsy strongly indicated.</p>
-                        </div>
-                        <div class="mdt-msg onco">
-                            <strong class="mdt-author">Dr. Elena Rostova (Oncology AI):</strong>
-                            <p>Evaluate HER2/ER/PR receptor expression post-biopsy for targeted neoadjuvant systemic therapy planning.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Clinical Action Guidelines & Recommendations -->
-                <div class="result-card recommendation-card">
-                    <h4>🏥 Clinical Action & NCCN Recommendation</h4>
-                    <div class="rec-box" id="recBox">
-                        <div class="birads-level" id="recBirads">BI-RADS Category: --</div>
-                        <p class="rec-action" id="recAction">Generating clinical guidelines...</p>
-                        <div class="urgency-badge" id="recUrgency">Urgency: --</div>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Analysis Basis: the evidence and computational basis behind the result,
-                 plus the conditions under which it should not be relied on. -->
-            <section class="analysis-basis" id="analysisBasisPanel">
-
-                <div class="basis-header">
-                    <h4>Analysis Basis</h4>
-                    <p class="basis-sub">What this system used to produce the result above, and where that result can fail.</p>
-                </div>
-
-                <div class="basis-grid">
-                    <div class="basis-block">
-                        <h5>Input</h5>
-                        <ul class="basis-list" id="basisInput"></ul>
-                    </div>
-                    <div class="basis-block">
-                        <h5>Image Evidence</h5>
-                        <ul class="basis-list" id="basisImage"></ul>
-                    </div>
-                    <div class="basis-block">
-                        <h5>Clinical Evidence</h5>
-                        <ul class="basis-list" id="basisClinical"></ul>
-                    </div>
-                    <div class="basis-block">
-                        <h5>Model Output</h5>
-                        <ul class="basis-list" id="basisOutput"></ul>
-                    </div>
-                </div>
-
-                <div class="basis-limits">
-                    <h5>Where This Result May Fail</h5>
-                    <ul class="basis-list limits" id="basisLimits"></ul>
-                </div>
-
-                <div class="basis-status" id="basisStatus"></div>
-
-            </section>
-
-            <!-- Action Toolbar: Export PDF, DICOM SR, Google Sheets Sync, Save Case -->
-            <div class="results-actions">
-                <button type="button" class="action-btn pdf" onclick="exportPDFReport()">
-                    📄 Export Clinical PDF
-                </button>
-                <button type="button" class="action-btn dicom-sr" onclick="exportDICOMStructuredReport()">
-                    📑 Export DICOM SR (BI-RADS 5.0)
-                </button>
-                <button type="button" class="action-btn print" onclick="window.print()">
-                    🖨️ Print Snapshot
-                </button>
-                <button type="button" class="action-btn voice" onclick="speakDiagnosis()">
-                    🔊 Audio Voice Summary
-                </button>
-                <button type="button" class="action-btn sheets" onclick="manualSyncSheets()">
-                    📊 Sync to Sheets
-                </button>
-                <button type="button" class="action-btn save" onclick="saveToPatientLog()">
-                    💾 Save to History Log
-                </button>
-            </div>
-
+        <section class="panel limits" aria-labelledby="limits-h">
+          <div class="panel-head"><h2 id="limits-h">Limits</h2></div>
+          <ul class="limit-list" role="list">
+            <li>Scores are not calibrated. A high score is not a measured chance of cancer.</li>
+            <li>The image type detector cannot tell a breast scan from any other picture. Any image gets a score.</li>
+            <li>Public sample images may be part of the data the model was trained on, so a correct answer on them proves little.</li>
+            <li>Nothing is sent anywhere except the model service. History stays in this browser.</li>
+          </ul>
         </section>
-
-        <!-- WebCam Modal -->
-        <dialog id="cameraModal" class="glass-dialog">
-            <div class="dialog-header">
-                <h3>📷 Live Ultrasound/Scan Camera Capture</h3>
-                <button type="button" class="close-btn" onclick="closeCameraModal()">✖</button>
-            </div>
-            <div class="dialog-body">
-                <video id="webcamVideo" autoplay playsinline></video>
-                <canvas id="cameraCanvas" style="display:none;"></canvas>
-            </div>
-            <div class="dialog-footer">
-                <button type="button" class="primary-btn" onclick="captureWebcamFrame()">📸 Capture Frame</button>
-                <button type="button" class="btn-secondary" onclick="closeCameraModal()">Cancel</button>
-            </div>
-        </dialog>
-
-        <!-- Patient History Drawer -->
-        <div id="historyDrawer" class="drawer glass-drawer">
-            <div class="drawer-header">
-                <h3>📁 Patient Case History Log</h3>
-                <button type="button" class="close-btn" onclick="closeHistoryDrawer()">✖</button>
-            </div>
-            <div class="drawer-body">
-                <div class="history-controls">
-                    <input type="text" id="historySearch" placeholder="Search by ID, Diagnosis, or Date..." oninput="filterHistory()">
-                    <button type="button" class="btn-secondary" onclick="exportHistoryCSV()">📥 Export CSV</button>
-                    <button type="button" class="btn-secondary clear" onclick="clearHistoryLog()">🗑️ Clear</button>
-                </div>
-                <div class="table-responsive">
-                    <table class="history-table">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Age</th>
-                                <th>Modality</th>
-                                <th>Diagnosis</th>
-                                <th>Conf</th>
-                                <th>BI-RADS</th>
-                            </tr>
-                        </thead>
-                        <tbody id="historyTableBody">
-                            <tr><td colspan="6" class="empty-msg">No patient records saved yet.</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
         </div>
 
-        <!-- BI-RADS Educational Glossary Modal -->
-        <dialog id="glossaryModal" class="glass-dialog large">
-            <div class="dialog-header">
-                <h3>📖 ACR BI-RADS & Radiomics Educational Reference</h3>
-                <button type="button" class="close-btn" onclick="closeGlossaryModal()">✖</button>
-            </div>
-            <div class="dialog-body glossary-content">
-                <h4>Breast Imaging Reporting and Data System (BI-RADS)</h4>
-                <ul>
-                    <li><strong>BI-RADS 0:</strong> Incomplete assessment. Additional imaging needed.</li>
-                    <li><strong>BI-RADS 1:</strong> Negative. Symmetrical, normal tissue architecture.</li>
-                    <li><strong>BI-RADS 2:</strong> Benign finding (e.g. Simple fluid-filled cyst, fibroadenoma).</li>
-                    <li><strong>BI-RADS 3:</strong> Probably benign finding (< 2% risk of malignancy). Short-interval follow-up.</li>
-                    <li><strong>BI-RADS 4:</strong> Suspicious abnormality (2% to 95% malignancy risk). Core biopsy recommended.</li>
-                    <li><strong>BI-RADS 5:</strong> Highly suggestive of malignancy (≥ 95% risk). Immediate biopsy & oncology consult.</li>
-                    <li><strong>BI-RADS 6:</strong> Known biopsy-proven malignancy. Surgical planning.</li>
-                </ul>
-
-                <h4>Multimodal AI Architecture</h4>
-                <p>
-                    This system leverages late fusion of vision transformers (MedCLIP) and tabular decision trees (TabNet). 
-                    Image features are combined with 9 clinical parameters and 6 radiomic shape/texture descriptors to maximize screening sensitivity and specificity.
-                </p>
-            </div>
-            <div class="dialog-footer">
-                <button type="button" class="primary-btn" onclick="closeGlossaryModal()">Close Reference</button>
-            </div>
-        </dialog>
-
-        <!-- Medical Disclaimer -->
-        <section class="disclaimer-section glass-panel">
-            <p>
-                <strong>⚠️ Clinical Research Disclaimer:</strong> OncoVision AI is designed for 
-                <strong>educational and research purposes only</strong>. It is not intended for independent diagnostic reliance. 
-                All predictions must be validated by a licensed Radiologist or Medical Institution.
-            </p>
+        <div class="col">
+        <section class="panel output" aria-labelledby="result-h" aria-live="polite">
+          <div class="panel-head"><h2 id="result-h">Result</h2></div>
+          <div id="result"></div>
+          <dl class="classes">
+            <div><dt>Benign</dt><dd>A lesion that is not cancer.</dd></div>
+            <div><dt>Malignant</dt><dd>A lesion the model reads as cancer.</dd></div>
+            <div><dt>Normal</dt><dd>No lesion seen.</dd></div>
+          </dl>
         </section>
 
+        <section class="panel checks-panel" aria-labelledby="checks-h">
+          <div class="panel-head"><h2 id="checks-h">Model checks</h2></div>
+          <div id="checks"></div>
+        </section>
+
+
+        </div>
+      </div>
     </main>
 
-    <!-- Footer with Academic Credits & Contacts -->
-    <footer class="glass-footer">
-        <div class="footer-container">
-            
-            <div class="credit-block">
-                <p class="credit-role">Principal Investigator</p>
-                <h3 class="credit-name">Dr. Roseline Ogundokun</h3>
-                <p class="credit-affiliation">Lead AI Healthcare Research Group</p>
-            </div>
-
-            <div class="credit-block">
-                <p class="credit-role">Co-Investigators & Engineers</p>
-                <h3 class="credit-name">Mrs. Dola Olawoye Prisica &bull; Mr. Adejare Adelugba</h3>
-                <p class="credit-affiliation">Multimodal Deep Learning & Radiomics Specialist Team</p>
-            </div>
-
-            <div class="contact-block">
-                <a href="mailto:adelugbaadejare03@gmail.com" class="glass-link">
-                    ✉️ adelugbaadejare03@gmail.com
-                </a>
-                <a href="tel:+2347038027765" class="glass-link">
-                    📞 +234 703 802 7765
-                </a>
-                <a href="https://github.com/adejare-dev" target="_blank" rel="noopener" class="glass-link">
-                    🌐 GitHub Repository
-                </a>
-            </div>
-        </div>
-        
-        <div class="footer-bottom">
-            <p>&copy; 2026 Adejare Work Studio &bull; Multimodal AI Breast Cancer Platform</p>
-        </div>
+    <footer class="footer">
+      <span>Jvision 3.0 · research prototype, not a medical device</span>
+      <a href="https://github.com/Adejare-ml/med-cancer-multimodal-diagnostics">Source on GitHub</a>
+      <span class="muted">Sample images: BUSI dataset, Al-Dhabyani et al., 2020</span>
     </footer>
 
-    <!-- OncoBot AI Diagnostic Assistant Floating Widget & Drawer -->
-    <button type="button" class="oncobot-float-btn" id="oncobotBtn" onclick="toggleOncobotDrawer()" title="Ask OncoBot AI Assistant">
-        🤖 <span class="oncobot-label">OncoBot AI</span>
-    </button>
-
-    <div class="oncobot-drawer glass-panel" id="oncobotDrawer" style="display:none;">
-        <div class="drawer-header">
-            <div class="bot-info">
-                <span class="bot-avatar">🤖</span>
-                <div>
-                    <h4>OncoBot AI Clinical Assistant</h4>
-                    <small>Radiology & BI-RADS Specialist</small>
-                </div>
-            </div>
-            <button type="button" class="close-btn" onclick="toggleOncobotDrawer()">✖</button>
-        </div>
-        <div class="chat-messages" id="chatMessages">
-            <div class="chat-msg bot">
-                👋 Hello! I am OncoBot AI. Ask me anything about BI-RADS guidelines, lesion radiomics, ultrasound vs mammogram features, or recommended clinical next steps!
-            </div>
-        </div>
-        <div class="chat-input-row">
-            <input type="text" id="chatInput" placeholder="Type clinical question..." onkeypress="handleChatKeyPress(event)">
-            <button type="button" class="primary-btn" onclick="sendChatMessage()">Send</button>
-        </div>
+    <div class="print-only print-header" aria-hidden="true">
+      <strong>Jvision case report</strong>
+      <span id="print-meta"></span>
     </div>
+    <div class="print-only print-footer" aria-hidden="true">Research prototype. Not a diagnosis. Do not use for patient care.</div>
 
-    <!-- App Logic Script -->
-    <!-- Evidence rules for the Analysis Basis panel; must load before script.js. -->
-    <script src="analysis-basis.js" defer></script>
-    <script src="script.js" defer></script>
+    <dialog id="history" class="drawer" aria-labelledby="history-h">
+      <div class="drawer-head">
+        <h2 id="history-h">History</h2>
+        <button type="button" class="btn ghost icon" data-close aria-label="Close history">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg>
+        </button>
+      </div>
+      <p class="muted small">Stored only in this browser. Up to 50 runs are kept.</p>
+      <div class="drawer-tools">
+        <label class="visually-hidden" for="history-search">Search history</label>
+        <input id="history-search" class="input" type="search" placeholder="Search history" />
+        <button type="button" class="btn ghost small" id="export-csv">Export CSV</button>
+        <button type="button" class="btn ghost small" id="clear-history">Clear</button>
+      </div>
+      <div id="history-list"></div>
+    </dialog>
 
-</body>
+    <dialog id="confirm" class="modal" aria-labelledby="confirm-h">
+      <h2 id="confirm-h">Clear history?</h2>
+      <p>This removes every saved run from this browser. It cannot be undone.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn ghost" value="cancel" data-close>Cancel</button>
+        <button type="button" class="btn danger" id="confirm-clear">Clear history</button>
+      </div>
+    </dialog>
+  </body>
 </html>
