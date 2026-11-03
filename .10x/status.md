@@ -1,11 +1,15 @@
 # Status — jvision-rework
-- Phase: Discovery + Design complete (spec approved 2026-11-03). Implementation starting.
+- Phase: Verification complete (2026-11-03). Delivery pending the owner's go-ahead (PR, Space deploy).
 - Branch: rework/v3
-- Blocker to watch: clinical TabNet returns Benign 1.0 on a BI-RADS 4 spiculated case; label order differs between repo notebook and Space.
+
 ## Tasks
-- [ ] llm-council on cut list
-- [ ] Model probe
-- [ ] Backend src/app
-- [ ] Frontend Vite + TS
-- [ ] Tests, CI, README
-- [ ] Inspect + polish
+- [x] Spec and ADR-001..003
+- [x] llm-council on the cut list and model red flag
+- [x] Model probe (.10x/reviews/2026-11-03-model-probe.md)
+- [x] Backend src/app
+- [x] Frontend Vite + TS
+- [x] Tests, CI, README, deploy workflow
+- [x] Inspector 0 FAIL / 0 WARN, motion pass, social image
+- [ ] Open PR to main (owner)
+- [ ] Add HF_TOKEN secret and deploy to the Space (owner)
+- [ ] Probe the mammogram model; retrain the clinical model (follow-ups)

@@ -29,3 +29,12 @@ node_modules/
 *.pkl
 *.onnx
 *.pth
+*.joblib
+*.zip
+
+# Downloaded model weights (fetched from the Hugging Face Space at startup)
+models/
+
+# Frontend build and design tooling output
+dist/
+.taste-skill/
