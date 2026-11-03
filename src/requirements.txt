@@ -1,6 +1,6 @@
 # Runtime for the Jvision API. torch/torchvision come from the CPU index (see Dockerfile).
 fastapi==0.115.6
-uvicorn[standard]==0.32.1
+uvicorn[standard]==0.54.0
 python-multipart==0.0.20
 pydantic==2.10.4
 pillow==11.0.0
