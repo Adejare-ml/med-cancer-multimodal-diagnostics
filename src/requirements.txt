@@ -5,7 +5,7 @@ python-multipart==0.0.20
 pydantic==2.14.2
 pillow==11.0.0
 numpy==1.26.4
-huggingface_hub==0.27.0
+huggingface_hub==2.4.0
 torch==2.3.0
 torchvision==0.18.0
 pytorch-tabnet==4.1.0
