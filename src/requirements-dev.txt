@@ -1,7 +1,7 @@
 # Contract tests run against a fake predictor, so no torch here.
 fastapi==0.115.6
 python-multipart==0.0.20
-pydantic==2.14.2
+pydantic==2.14.3
 pillow==11.0.0
 httpx==0.28.1
 pytest==8.3.4
