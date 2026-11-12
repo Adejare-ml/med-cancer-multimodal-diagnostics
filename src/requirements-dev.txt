@@ -4,4 +4,4 @@ python-multipart==0.0.20
 pydantic==2.14.2
 pillow==11.0.0
 httpx==0.28.1
-pytest==8.3.4
+pytest==9.2.0
