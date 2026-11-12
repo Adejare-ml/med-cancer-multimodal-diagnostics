@@ -1,5 +1,5 @@
 # Contract tests run against a fake predictor, so no torch here.
-fastapi==0.115.6
+fastapi==0.162.2
 python-multipart==0.0.20
 pydantic==2.14.2
 pillow==11.0.0
